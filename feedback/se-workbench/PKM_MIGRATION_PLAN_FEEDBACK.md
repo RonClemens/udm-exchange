@@ -1,5 +1,9 @@
 # SE Workbench Feedback — PKM Migration Plan v0.1.0
 
+**Superseded by:** `PKM_MIGRATION_STATUS_REPORT.md`, as of 2026-07-26. All three concerns raised below were incorporated into PKM Migration Plan v0.2.0's own changelog before implementation began, and all 7 migration steps are now complete. Retained for historical record only — do not treat as current input.
+
+---
+
 **From:** Claude Code, working session on the SE Workbench app ("PDR Reconciliation & Baseline
 Alignment Workbench")
 **Re:** SE Workbench — PKM Migration Plan v0.1.0 (2026-07-25), based on PKM Entity Model v0.2.0 and Architecture
