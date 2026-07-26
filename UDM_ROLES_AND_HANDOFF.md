@@ -73,10 +73,13 @@ udm-exchange/
 ├── migration-plans/
 │   └── se-workbench/
 │       └── PKM_MIGRATION_PLAN.md
-└── feedback/
-    └── se-workbench/
-        ├── PKM_ENTITY_MODEL_CONFORMANCE.md
-        └── PKM_MIGRATION_PLAN_FEEDBACK.md
+├── feedback/
+│   └── se-workbench/
+│       ├── PKM_ENTITY_MODEL_CONFORMANCE.md
+│       ├── PKM_MIGRATION_PLAN_FEEDBACK.md
+│       └── PKM_MIGRATION_STATUS_REPORT.md
+└── proposals/
+    └── PROPOSAL_DOMAIN_PLACEHOLDER_CONVENTION.md
 ```
 
 Future participating apps get their own `migration-plans/<app-name>/` and `feedback/<app-name>/` folders — no other structural change needed.

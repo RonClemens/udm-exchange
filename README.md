@@ -14,6 +14,14 @@ Shared, public-safe methodology documents for the Unified Data Model (UDM) effor
 | PKM Entity Model | v0.2.1 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
 | SE Workbench Migration Plan | v0.2.0 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
 
+## Pending proposals
+
+Draft changes to a canonical document, awaiting review before they merge in. Not yet in effect.
+
+| Proposal | Targets | Status |
+|---|---|---|
+| `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | v0.1.0 draft, under review |
+
 ---
 
 ## Structure
@@ -30,6 +38,10 @@ migration-plans/            # Per-app plans for adopting the PKM model.
 
 feedback/                   # Per-app conformance/round-trip feedback on the above.
   <app-name>/                  One folder per participating app.
+
+proposals/                  # Draft changes to a canonical document, pending review.
+                             # Not in effect until folded into architecture-guidance/
+                             # or pkm/ with a version bump and changelog entry.
 ```
 
 ## How this repo is used
