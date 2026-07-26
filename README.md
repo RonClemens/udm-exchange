@@ -42,6 +42,17 @@ feedback/                   # Per-app conformance/round-trip feedback on the abo
 
 Each participating app's coding session and the `udm-exchange` coding session read and write this repo directly — no human relay for the routine mechanics. Ron (the human coordinator) is only in the loop for: relaying documents from the design chat (which has no git tooling of its own), approving content changes to canonical documents, and resolving decisions that cut across more than one app's repo. See `UDM_ROLES_AND_HANDOFF.md` and `UDM_EXCHANGE_ACCESS_PROTOCOL.md` for the full model.
 
+## Feedback document conventions
+
+`feedback/<app-name>/` is meant to reflect each app's *current* standing feedback — not an accumulating pile of every review ever written. Direct-push access to this folder comes with two obligations:
+
+1. **State what version you're reviewing.** Every feedback document's header must name the exact version of the canonical document it reports against (e.g. "Re: PKM Entity Model v0.2.1"), checked against the **Current versions** table above at the time of writing. A document whose header cites an older version than what's in that table is stale by definition.
+2. **Don't leave superseded feedback in place unmarked.** When a new feedback document replaces an older one on the same topic (because the canonical doc revved, or the review was redone), the old document must not simply sit alongside the new one indistinguishable from current input. Either:
+   - move it to `feedback/<app-name>/archive/` before or as part of the same commit that adds its replacement, or
+   - add a one-line marker at the top of the superseded file — `**Superseded by:** <new-file>, as of <date>` — in the same commit.
+
+This applies whenever an app's session pushes feedback directly (see "What changed" in `UDM_EXCHANGE_ACCESS_PROTOCOL.md`) — there's no human relay step left to catch a stale re-send before it reaches whoever's reading raw URLs from this repo.
+
 ## Adding a new app to this exchange
 
 Create `migration-plans/<app-name>/` and `feedback/<app-name>/` folders. No changes needed elsewhere — the canonical documents are already written to be program/app-agnostic.

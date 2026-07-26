@@ -52,7 +52,7 @@ No two of the three participants communicate directly with each other outside of
 - **Does not:** touch the Workbench repo or any other app's repo, or write into another app's `migration-plans/`/`feedback/` folder.
 
 ### SE Workbench coding session
-- **Does:** implement the app against Architecture Guidance and the PKM Migration Plan; generate conformance/migration feedback documents; commit its own migration-plan and feedback updates directly to `migration-plans/se-workbench/` and `feedback/se-workbench/` in `udm-exchange`.
+- **Does:** implement the app against Architecture Guidance and the PKM Migration Plan; generate conformance/migration feedback documents; commit its own migration-plan and feedback updates directly to `migration-plans/se-workbench/` and `feedback/se-workbench/` in `udm-exchange`, following the feedback-freshness convention in `README.md` (cite the exact version reviewed; archive or mark superseded documents in the same commit that replaces them).
 - **Does not:** write to `architecture-guidance/` or `pkm/`, or to any other app's folders.
 - **Note:** the `docs/udm-exchange` folder inside the Workbench repo itself (created earlier, before the standalone repo existed) is superseded. Workbench's role going forward references the standalone `udm-exchange` repo, not its own folder.
 
