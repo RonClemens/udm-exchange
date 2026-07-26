@@ -34,11 +34,13 @@ feedback/                   # Per-app conformance/round-trip feedback on the abo
 
 ## How this repo is used
 
-1. Canonical documents (`architecture-guidance/`, `pkm/`) are edited here directly, versioned, and changelogged within each file.
+1. Canonical documents (`architecture-guidance/`, `pkm/`) are edited here directly, versioned, and changelogged within each file. Content changes to these two folders originate with the design chat and route through Ron; the `udm-exchange` coding session commits them but doesn't author them.
 2. A CUI-side app repo vendors a pinned copy of whatever it needs, per Architecture Guidance §8 — never edits the vendored copy directly.
-3. When an app reviews a document against its real implementation, that review lands in `feedback/<app-name>/`.
-4. When an app's team plans how to adopt the PKM model, that plan lands in `migration-plans/<app-name>/`.
+3. When an app reviews a document against its real implementation, that review lands in `feedback/<app-name>/`, pushed directly by that app's own coding session.
+4. When an app's team plans how to adopt the PKM model, that plan lands in `migration-plans/<app-name>/`, same direct-push arrangement.
 5. Findings from `feedback/` and `migration-plans/` get folded back into the canonical documents' next version, same as any other changelog entry.
+
+Each participating app's coding session and the `udm-exchange` coding session read and write this repo directly — no human relay for the routine mechanics. Ron (the human coordinator) is only in the loop for: relaying documents from the design chat (which has no git tooling of its own), approving content changes to canonical documents, and resolving decisions that cut across more than one app's repo. See `UDM_ROLES_AND_HANDOFF.md` and `UDM_EXCHANGE_ACCESS_PROTOCOL.md` for the full model.
 
 ## Adding a new app to this exchange
 
