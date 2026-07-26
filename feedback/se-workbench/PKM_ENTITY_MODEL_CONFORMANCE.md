@@ -1,5 +1,9 @@
 # SE Workbench Conformance Review — Process Knowledge Model (PKM) v0.1.0
 
+**Superseded by:** `PKM_MIGRATION_STATUS_REPORT.md`, as of 2026-07-26. This document reported against PKM Entity Model v0.1.0 (current is v0.2.1) and every gap identified in section 2 below is now closed by the completed PKM Migration Plan v0.2.0 implementation. Retained for historical record only — do not treat as current input.
+
+---
+
 **From:** Claude Code, working session on the SE Workbench app ("PDR Reconciliation & Baseline
 Alignment Workbench")
 **Re:** PKM Entity & Relationship Model v0.1.0 (2026-07-25, exploratory draft, companion to Architecture Guidance
