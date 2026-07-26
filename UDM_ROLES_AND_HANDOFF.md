@@ -93,6 +93,6 @@ Future participating apps get their own `migration-plans/<app-name>/` and `feedb
 
 ---
 
-## Open item carried over from the last review
+## Open items
 
-**Still unresolved, blocking Workbench's Step 2 (Baseline enum → entity) from starting:** whether Step 2 and Architecture Guidance's pending content-split work (untangling `recoveryProgramGuidance.ts`) run as one coordinated effort or in an explicit sequence. This needs a decision from Ron or Workbench's team — it isn't something either coding session should resolve unilaterally, since it affects both repos' work.
+None carried over. The item tracked in this section through 2026-07-26 — whether Workbench's Step 2 (Baseline enum → entity) and Architecture Guidance's content-split work (untangling `recoveryProgramGuidance.ts`) should run coordinated or sequenced — is resolved: per `feedback/se-workbench/PKM_MIGRATION_STATUS_REPORT.md`, Step 2 was implemented coordinated with the app's own content-split, and all 7 migration steps are now complete, verified, and deployed. See that report's §3 for the optional (non-blocking) follow-up topics it surfaced instead.
