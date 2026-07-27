@@ -1,11 +1,12 @@
 # UDM Effort — Workflow Protocol: States, Commands, and Handoff Triggers
 
-**Version:** 1.6.0
+**Version:** 1.7.0
 **Last updated:** 2026-07-27
 **Status:** Active
 **Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.1.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
 
 **Changelog:**
+- **v1.7.0** — §3.1 now requires SHA-pinned raw URLs, not branch-pinned ones, for self-verification and for any downstream `CONFIRM` check. Root cause: a branch-pinned URL (`.../main/<path>`) can lag the actual commit for a period after a push — observed directly when a Workbench self-verification and a design-chat re-check of the same branch-pinned URL disagreed for over an hour after a real, already-landed commit. A SHA-pinned URL (`.../<commit-sha>/<path>`) is immutable and doesn't have this problem by construction. This removes the failure mode rather than catching it after the fact.
 - **v1.6.0** — Added a `Timestamp:` line to the `Source:`/`Target:` header (§3.2), and the `SENT` acknowledgment convention (§3.3): after relaying a batch, Ron posts `SENT` back into the *source* chat so each chat's own scrollback shows what's actually been relayed versus still pending. Added because Ron needs to pick this workflow back up after time away, across three separate chat sessions with no shared view between them — the timestamp resolves "which version of this batch is current" and `SENT` resolves "did I already send this."
 - **v1.5.0** — Added §3.2, the `Source:`/`Target:` header convention for relayed command batches: optional structure that attributes a batch's origin and destination and groups multiple commands sharing the same pair, rather than reconstructing that context from surrounding prose. Multi-target batches are always split into separate headers, one per target.
 - **v1.4.0** — Added §3.1, mandatory self-verification before reporting `CONFIRM`: any entity that pushes a commit must fetch the raw URL itself and check the content matches before telling Ron it's done. Added after two consecutive commits were reported complete when the pushed content didn't actually match (once on `UDM_WORKFLOW_PROTOCOL.md` itself, once on `UDM_ROLES_AND_HANDOFF.md` never landing at all). This isn't about which entity made the mistake — it closes the gap so a reported commit is reliable without Ron needing to independently re-check every time.
@@ -87,6 +88,18 @@ A single message from Ron containing one of these seven verbs is enough for any 
 
 Any entity that pushes a commit — currently only the `udm-exchange` session, but this applies to any future entity with write access — must fetch the raw URL itself and confirm the pushed content actually matches what was intended, **before** reporting it as done. Check at minimum: the version number in the header, and any specific section called out in the handoff instructions as having changed.
 
+**Use the SHA-pinned raw URL, not the branch-pinned one:**
+
+```
+Branch-pinned (do not use for verification):
+https://raw.githubusercontent.com/RonClemens/udm-exchange/main/<path>
+
+SHA-pinned (use this):
+https://raw.githubusercontent.com/RonClemens/udm-exchange/<commit-sha>/<path>
+```
+
+A branch-pinned URL can lag the actual commit for a period after a push — this was observed directly (2026-07-27): a real, already-landed commit read as stale on the branch-pinned URL for over an hour, across both a self-verification check and an independent design-chat re-check, while the SHA-pinned URL for the same commit was correct immediately. A SHA-pinned URL is immutable by construction and doesn't have this failure mode. Get the commit SHA from whatever push/commit response is available (e.g., a `git` command's output, an API response) and use it for the verification fetch. Once verification passes, `CONFIRM` can still reference the branch-pinned URL as the canonical, human-readable link — the SHA-pinned form is for the verification step itself, not necessarily the one shared onward.
+
 A reported completion that turns out not to match on re-check costs more than the extra minute of self-checking would have: it costs a full round-trip (Ron relays a `CONFIRM`, design chat catches the mismatch, Ron relays back, the commit gets redone), and it means every future `CONFIRM` from that entity needs independent re-verification rather than being trusted at face value. Self-verification isn't an optional courtesy — it's what keeps `CONFIRM` meaning "this is actually done" rather than "I attempted this."
 
 ### 3.2 `Source:` / `Target:` / `Timestamp:` batch headers (optional, strengthens when present)
@@ -156,7 +169,7 @@ Every entity in this state machine can become the blocking node — a coding ses
 
 Concretely, per entity:
 
-- **Design chat** — before responding to a new UDM-related request, checks the status board for anything stalled at `READY`/`FEEDBACK_READY` and names the count and which items first.
+- **Design chat** — before responding to a new UDM-related request, checks the status board for anything stalled at `READY`/`FEEDBACK_READY` and names the count and which items first. When independently re-verifying a `CONFIRM`, prefers the SHA-pinned raw URL (§3.1) if one has been provided, and treats a mismatch on a branch-pinned URL alone as inconclusive rather than a confirmed failure until a SHA-pinned check is available.
 - **`udm-exchange` session** — before acting on a new commit request, checks (a) whether anything in its own queue is unpushed, and (b) whether the requester's understanding of a document's current state matches what's actually on `main` — e.g. flags it if someone is treating a document as still `READY` when it's already `COMMITTED` or further along.
 - **Workbench session** — before pushing new feedback or migration-plan updates, checks whether any of its own prior `FEEDBACK_READY` items — produced but not yet confirmed committed — are still outstanding, and names them.
 
