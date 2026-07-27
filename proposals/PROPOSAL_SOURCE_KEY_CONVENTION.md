@@ -1,57 +1,72 @@
-# Proposal: Source Key on Relayed Commands
+# Proposal: Source/Target/Batch Structure for Relayed Commands
 
-**Version:** 0.1.0 (Proposal — not yet merged into the Workflow Protocol)
+**Version:** 0.2.0 (Proposal — not yet merged into the Workflow Protocol)
 **Last updated:** 2026-07-27
 **Status:** Draft, for review
-**Origin:** Ron's request, immediately after Workflow Protocol §3.1 (self-verification) was used for the first time — the resulting `CONFIRM` block reported that this session had self-verified, but nothing in the command's actual format captured that; it was only stated in surrounding prose.
+**Origin:** v0.1.0 proposed a bare `Source:` line after Workflow Protocol §3.1 (self-verification) was used for the first time and the resulting `CONFIRM` reported the self-check only in surrounding prose. Ron then extended the idea further in the same session: every command has both an origin and a destination, and repeated commands between the same pair are naturally batched — this revision generalizes accordingly, before v0.1.0 had been reviewed by anyone else.
 **Target:** `UDM_WORKFLOW_PROTOCOL.md` §3, proposed as a new subsection (§3.2) alongside §3.1.
+
+**Changelog:**
+- **v0.2.0** — Generalized from a single `Source:` line to a `Source:`/`Target:` pair plus explicit batching, and added the format-choice rationale (structured markdown now, not JSON, until something automated actually parses these).
+- **v0.1.0** — Initial version: `Source:` line only, to attribute a `CONFIRM`/`CLOSE` to whichever entity actually performed the underlying check.
 
 ---
 
 ## 1. The gap
 
-§3.1 requires an entity to self-verify a commit before reporting it as done. But the command vocabulary itself (`CONFIRM <path>`, `CLOSE <item>`, etc.) carries no field for *how* that confirmation was arrived at. In practice this session included the self-verification claim as prose around the command block, not inside it — which means the provenance depends on Ron accurately relaying surrounding text, rather than being part of the structured trigger itself. Given this protocol's whole premise is that the vocabulary should carry the information, not prose reconstructed alongside it, this is the same category of gap §1 already warns about.
+§3.1 requires an entity to self-verify a commit before reporting it as done. But the command vocabulary itself (`CONFIRM <path>`, `CLOSE <item>`, etc.) carries no field for *who issued it, to whom, or how it was verified* — all of that currently lives in prose around the command block (a chat-style "Ron → design chat:" header, or narrative like "self-verified per §3.1"), not in the command's own structure. Since this protocol's whole premise (§1) is that the vocabulary should carry the information rather than prose reconstructed alongside it, this is the same category of gap §1 already exists to close for everything else.
 
-Concretely, right now design chat cannot tell, from the command alone, whether a `CONFIRM` reflects:
-- Ron's own independent check of the raw URL, or
-- an AI entity's self-verification (per §3.1), relayed by Ron, or
-- neither — a `CONFIRM` sent before any check happened at all (the exact failure mode §3.1 was written to prevent).
+Concretely, without structure, none of the following is reliably recoverable from the command alone:
+- Which entity originated the command (Ron manually, or relayed on behalf of a coding session's self-check).
+- Which entity it's directed at (usually implicit from which chat window it's pasted into, but not from the text itself).
+- Whether several commands in one message all share the same origin/destination, or are a mix that happens to be batched together for relay convenience.
 
 ## 2. What's being proposed
 
-Add an optional **`Source:`** line immediately above any command batch that reports a completed action, naming which entity performed the underlying verification and how:
+Every relayed command batch carries two header fields — **`Source:`** and **`Target:`** — followed by one or more commands. Multiple commands sharing the same source/target pair are listed together under one header, not repeated per line:
 
 ```
-Source: <entity> — <method>
+Source: <entity>
+Target: <entity>
 
-CONFIRM <path>
+<VERB> <object>
+<VERB> <object>
+...
 ```
 
-Examples:
+Worked example, matching what was actually relayed this session:
+
 ```
-Source: udm-exchange session — self-verified per SS3.1 (raw URL fetched, version + key section confirmed)
+Source: udm-exchange session — self-verified per §3.1 (raw URL fetched, version + key section confirmed)
+Target: design chat
 
 CONFIRM https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_WORKFLOW_PROTOCOL.md
+CONFIRM https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_ROLES_AND_HANDOFF.md
+REVIEW https://raw.githubusercontent.com/RonClemens/udm-exchange/main/proposals/PROPOSAL_SOURCE_KEY_CONVENTION.md
 ```
 
+A second batch to a different target, or from a different source, gets its own header rather than being folded into the first:
+
 ```
-Source: Ron — verified directly in GitHub UI
+Source: Ron
+Target: Workbench session
 
-CONFIRM https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md
+HANDOFF architecture-guidance/ARCHITECTURE_GUIDANCE.md v1.4.0 → Workbench
 ```
 
-**Rule:** a `CONFIRM` with no `Source:` line is not a regression — it's simply unattributed, same as today. But once §3.1 self-verification exists as a named obligation, any entity claiming to have satisfied it should say so in a form the receiving entity can parse and rely on, not just in accompanying prose that may or may not survive relay.
+**Rule:** `Source:`/`Target:` are attribution and batching structure, not new verbs or new states — the state machine (§2) and command vocabulary (§3) are unchanged. A batch with no header is not a regression; it's simply unattributed, same as every command relayed before this convention existed.
 
-## 3. Why this is a small addition, not new machinery
+## 3. Why structured markdown, not a JSON schema, for now
 
-- No new verb, no new state — same category as §6's accountability convention: a discipline layered onto the existing vocabulary, not a protocol rewrite.
-- Optional, not mandatory on every command — `HANDOFF`, `REVIEW`, `STATUS`, `NEXT` don't report a completed verification, so they have no obvious use for a source key. It only makes sense on `CONFIRM` (and arguably `CLOSE`, when closing a loop based on a check rather than just a decision).
-- Doesn't change what any entity is allowed to do — it only makes an existing claim ("I checked this") structured and attributable instead of implicit in prose.
+The natural next step once you have `{source, target, verb, object}` per command is to ask whether this should just be JSON. Deliberately not proposing that yet: **every current consumer of these commands is an AI chat entity reading prose that Ron copy-pastes between three separate chat UIs — nothing parses them programmatically.** JSON adds real value once something automated actually consumes a batch (a script, a generated status board reading a transaction log, a future dashboard) — until then, it's formatting overhead with no parser to benefit from it, and it makes every relay a hand-authored JSON object instead of a markdown block any of the three chat entities already read natively.
 
-## 4. Open question for review
+Structured markdown headers get most of the value now (attribution, batching, machine-*extractable* if something does want to parse it later — the format is regular enough to convert) without forcing JSON authoring into a workflow that is, at every step, a human pasting text between chat windows. If §4's status board (or some future tooling) ever needs to ingest these programmatically, converting this markdown convention to JSON at that point is a small, mechanical step — not a reason to pay the authoring cost today.
 
-Should `Source:` become **mandatory** on every `CONFIRM` once §3.1 is in force (i.e., a `CONFIRM` without one is treated as unverified and not trusted), or stay optional metadata that strengthens a `CONFIRM` when present but doesn't invalidate one when absent? This proposal doesn't take a position — whichever design chat judges keeps the protocol lightweight rather than adding a compliance burden nobody asked for.
+## 4. Open questions for review
+
+1. Same as v0.1.0: should `Source:`/`Target:` become **mandatory** on every command once this is adopted, or stay optional structure that strengthens a command when present without invalidating one when absent?
+2. Should `Target:` ever name more than one entity (e.g., a `STATUS` broadcast Ron wants multiple entities to see), or should multi-target batches always be split into separate headers, one per target, even if the command text is identical? No strong position here — whichever keeps the common case (one source, one target) simplest.
 
 ---
 
-*Procedural only — this doesn't touch PKM/Architecture Guidance content, only how commands are relayed and attributed.*
+*Procedural only — this doesn't touch PKM/Architecture Guidance content, only how commands are relayed, attributed, and batched.*
