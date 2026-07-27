@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.2.0, PKM Entity & Relationship Model v0.2.1
+**Reports against:** PKM Migration Plan v0.2.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.2.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.2.0 (2026-07-27) — added §4, documenting the Acquisition Phase Workbench (new default guided navigation). No PKM entity/schema change beyond one additive evidence-type enum value. Renumbered former §3 (optional follow-ups) to §5 and added one new follow-up item.
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
@@ -31,7 +32,7 @@ Each step below is implemented, has passing server/client builds (both server-ba
 
 - **`@domain-placeholder` marker convention** — every field across every entity whose *value* is program-specific illustrative content (as opposed to structural fields: ids, references, fixed enums, timestamps) is now tagged in both type files, with a manifest doc explaining the convention and listing every tagged field per entity.
 - **PDKM Promises tab** — a read-only, filterable browser over every current record's `@domain-placeholder` values (including nested attachments, qualified alternates, and specification sections), framed as a promissory note: each value is synthetic and will be replaced once a real Product/Domain Knowledge Model exists for the program a given deployment serves, arriving via landing-zone upload or direct user entry. See §3 for a UI redesign of this tab since v1.0.0.
-- **Forward-compatibility note for a future guided/wizard interface** — this app's maintainer indicated an intent to eventually build a "TurboTax-style" prompted-question interface, fed by the same underlying model as the tabbed webapp, that would toggle which CDRLs apply in real time based on DID-derived trigger rules. `ChecklistItem`'s shape (a discrete, user-answerable criterion + toggleable status + structured evidence reference) was designed with this specifically in mind — nothing in the current schema should need to change shape when that UI is eventually built. No wizard UI or rules engine has been built yet; this is a documented design intent only.
+- **Forward-compatibility note for a future guided/wizard interface** — this app's maintainer indicated an intent to eventually build a "TurboTax-style" prompted-question interface, fed by the same underlying model as the tabbed webapp, that would toggle which CDRLs apply in real time based on DID-derived trigger rules. `ChecklistItem`'s shape (a discrete, user-answerable criterion + toggleable status + structured evidence reference) was designed with this specifically in mind. See §4 — this intent now has its first real, working slice.
 
 ## 3. Update since v1.0.0 (2026-07-27): PDKM Promises UI redesign
 
@@ -46,9 +47,27 @@ On top of that hierarchy: a pill-based multi-select filter row (one pill per maj
 
 No entity, field, or `@domain-placeholder` tagging changed — this is a presentation-layer change only, over the same field set from the Step 5-era manifest work in §2.
 
-This is offered as a concrete reference point, not a request for canonical guidance to change. It's directly relevant to one thing already on record between this app and the design chat: the `@domain-placeholder` proposal (now merged into Architecture Guidance v1.4.0 §10) and this app's own feedback on it (`PROPOSAL_DOMAIN_PLACEHOLDER_CONVENTION_RESPONSE.md`, §3, open question #2) noted that a shared cross-app Promises UI would need a machine-parseable manifest format, and deferred that as "a natural v2 once a second app actually wants to reuse a shared Promises-UI implementation." This redesign is this app's own grouping taxonomy and interaction pattern for that same UI, in case it's useful input if/when that v2 conversation happens — not a claim that this taxonomy should be adopted elsewhere.
+This was offered as a concrete reference point for a future shared cross-app Promises UI (per this app's own earlier proposal-response feedback on the `@domain-placeholder` convention), not a request for canonical guidance to change.
 
-## 4. Optional follow-ups (not blockers)
+## 4. Update since v1.1.0 (2026-07-27): Acquisition Phase Workbench
+
+This app's default navigation is no longer a flat tab list. It's now a "left-to-right," time/system-maturity-phase-driven guided workbench, built around the DoD Adaptive Acquisition Framework's Major Capability Acquisition (MCA) pathway: Materiel Solution Analysis → Technology Maturation & Risk Reduction → Engineering & Manufacturing Development → Production & Deployment → Operations & Support.
+
+**Phase taxonomy.** A new methodology module (`aafPhaseGuidance.ts`) bands the same 8 SETR events this app already tracks (SRR through PRR) under those 5 MCA phases — the same banding technique this app's own TDP/IEEE-12207 guidance already uses to group those identical 8 events by TDP maturity level and software life-cycle stage. This is a coarser lens over existing data, not a new competing taxonomy. Materiel Solution Analysis and Operations & Support are explicit, visibly-marked **stub phases**: this app's SETR modeling only spans SRR–PRR, so those two phases surface an out-of-scope note rather than fabricated content.
+
+**Pathway extensibility, deliberately unbuilt further than this.** The pathway type is a one-member union (`"MCA"` only) — `Record<Pathway, Phase[]>`-shaped so a second AAF pathway (e.g. Software Acquisition Pathway) could be added later without reshaping this data. No pathway-selection UI, no PDKM-driven intake flow, and no `pathway` field on any entity exist yet — that would be schema/UX churn for a value that only ever has one option today. Flagged in case this is relevant context for any future PKM discussion of whether acquisition-pathway/phase concepts belong in the PKM model itself, or stay purely app-side methodology content — no position taken either way here; see §5.
+
+**Baseline-scoped, derived, not stored.** A baseline's "current phase" is computed client-side from its existing `Milestone` records (first SETR event that isn't yet `Complete`) — no new stored field, no schema change. Baseline A and Baseline B, which already run fully independent SETR timelines in this app's data, correctly show different current phases side by side.
+
+**Guided prompting — the first real consumer of `ChecklistItem`'s forward-compat design.** Viewing a baseline's current phase surfaces a domain-grouped, click-to-answer panel over that milestone's `ChecklistItem` records: status (Not Evaluated/Met/Not Met/Waived) saves immediately on click, and a modal form covers full-record create/edit. This is exactly the "TurboTax-style" interaction `ChecklistItem`'s own shape was designed for back at PKM Migration Step 5 (§2 above) — nothing about its schema needed to change to support it.
+
+**Coexist, not replace.** The original 12-tab bar is fully preserved, byte-for-byte unchanged, reachable via an "All Tabs" toggle — same coexist-then-deprecate pattern as all 7 migration steps in §1. Nav-mode choice (guided workbench vs. all-tabs) persists per-browser.
+
+**Schema footprint:** one additive enum value only — `ChecklistItemEvidenceType` gained `"Specification"` (spec-related criteria had no valid evidence type to point at). Nothing else in the entity model changed.
+
+**Verification:** clean typecheck/build in both workspaces; both server-backed and static (`localStorage`) deploy modes smoke-tested end-to-end via Playwright with zero console errors, including default-landing, baseline/phase switching, guided-panel status persistence across reload, Edit Mode overrides on the new guidance prose, and confirmation that two unrelated existing tabs are unaffected.
+
+## 5. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
@@ -57,6 +76,7 @@ These surfaced during implementation and are offered as candidate topics for con
 3. **Gap's evidence cardinality**: this implementation used a single `foundInEntityType`/`foundInEntityId` reference per Gap (one location per finding). Real data already shows a finding can be "found in" one place while being *referenced by* multiple other mechanisms (the CI flag + Delta Matrix row case in Step 6) — worth a future pass on whether Gap needs to support multiple `foundIn` references, not just multiple things pointing *at* it.
 4. **Requirement/VerificationEvent/ChecklistItem decomposition of `Specification.sections`** remains deferred, per Step 4's and Step 5's own explicit scoping — flagged here only so it isn't lost as a known-remaining slice, not because it needs to happen next.
 5. **Promises UI major-group taxonomy (§3)** is this app's own judgment call, not a PKM-derived structure — flagged in case a future cross-app Promises UI conversation wants to compare notes on grouping approaches.
+6. **Acquisition-phase/pathway modeling (§4)** — whether a phase/pathway concept like `AcquisitionPhase`/`AcquisitionPathway` belongs in the PKM model itself (as a cross-app entity), or should stay purely app-side methodology/UI content the way this app has implemented it, is genuinely open. This app took the latter approach for now purely because it was the smaller, faster, most reversible first slice — not because of any assessment that it's the right long-term home for the concept.
 
 ---
 
