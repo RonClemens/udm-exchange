@@ -96,3 +96,13 @@ for that half of the round trip.
 
 Net effect: this is no longer a fully-manual round trip in both directions — only the UDM chat's own writes still
 need a human (or this session, forwarding on its behalf) in the loop.
+
+---
+
+## Update (2026-07-27): every command to design chat needs a resolved raw URL, not a bare path
+
+`UDM_WORKFLOW_PROTOCOL.md`'s command vocabulary (`HANDOFF <doc> → <entity>`, `CONFIRM <path>`, `REVIEW <path>`, `SUPERSEDE <old> → <new>`) is written using repo-relative paths as shorthand — fine for logging and for the two coding sessions, which can resolve a path against a local clone. **Design chat cannot.** It has no git tooling and no way to turn `feedback/se-workbench/PROPOSAL_DOMAIN_PLACEHOLDER_CONVENTION_RESPONSE.md` into content on its own — per "What works" above, it can only fetch a fully-formed `raw.githubusercontent.com` URL.
+
+**Rule:** any command Ron sends to design chat that names a document must carry that document's raw URL alongside (or instead of) the bare path. A `CONFIRM` or `REVIEW` issued with only a repo-relative path is not yet actionable by design chat — it's the same category of gap as a `HANDOFF` sitting un-relayed. Whichever session prepares the command list for Ron to send (this session, when a batch of commands touches documents it just committed) includes the resolved raw URL for each path in the same response, rather than leaving Ron to construct or look them up separately.
+
+This doesn't change the command vocabulary itself — that stays design chat's document to own — it just documents the delivery requirement the existing read-access constraint already implies.
