@@ -13,7 +13,7 @@ Shared, public-safe methodology documents for the Unified Data Model (UDM) effor
 | Architecture Guidance | v1.4.0 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
 | PKM Entity Model | v0.2.1 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
 | SE Workbench Migration Plan | v0.2.0 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
-| UDM Workflow Protocol | v1.7.0 | `UDM_WORKFLOW_PROTOCOL.md` |
+| UDM Workflow Protocol | v1.8.0 | `UDM_WORKFLOW_PROTOCOL.md` |
 | UDM Roles & Handoff | v1.1.0 | `UDM_ROLES_AND_HANDOFF.md` |
 
 ## Pending proposals
@@ -25,7 +25,7 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 | `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | **Merged** into Architecture Guidance v1.4.0 §10 — `RESOLVED` |
 | Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | **Merged** into Workflow Protocol v1.3.0 §6 — `RESOLVED` |
 | Source/Target/Batch Structure for Commands | `UDM_WORKFLOW_PROTOCOL.md` §3.2/§3.3 | **Merged** into Workflow Protocol v1.6.0 — `RESOLVED` |
-| Raw URL Required on Cross-Document References | `UDM_WORKFLOW_PROTOCOL.md` (proposed new §3.4) | v0.1.0 draft, under review |
+| Raw URL Required on Cross-Document References | `UDM_WORKFLOW_PROTOCOL.md` §3.4 | **Merged** into Workflow Protocol v1.8.0 — `RESOLVED` (no explicit `CLOSE` issued; marked resolved since §3.4's content fulfills it — flagged in case that's not yet intended) |
 
 ## Open item
 
