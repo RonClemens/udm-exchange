@@ -1,11 +1,12 @@
 # UDM Effort — Workflow Protocol: States, Commands, and Handoff Triggers
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Last updated:** 2026-07-27
 **Status:** Active
 **Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.1.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
 
 **Changelog:**
+- **v1.4.0** — Added §3.1, mandatory self-verification before reporting `CONFIRM`: any entity that pushes a commit must fetch the raw URL itself and check the content matches before telling Ron it's done. Added after two consecutive commits were reported complete when the pushed content didn't actually match (once on `UDM_WORKFLOW_PROTOCOL.md` itself, once on `UDM_ROLES_AND_HANDOFF.md` never landing at all). This isn't about which entity made the mistake — it closes the gap so a reported commit is reliable without Ron needing to independently re-check every time.
 - **v1.3.0** — Made §6's stall-check obligation symmetric across all three AI entities, not just design chat. Each entity now has the same concrete, written instruction rather than the principle applying by rule to one and by habit to the others.
 - **v1.2.0** — Added `NEXT`, a seventh command: unlike `STATUS` (full picture), `NEXT` returns exactly one concrete action to unblock whichever actor is currently the holdup — added because Ron needed a trigger that resolves to a single instruction, not a board to interpret.
 - **v1.1.0** — Added §6, the accountability convention, at Ron's explicit request: every entity, including Ron, can be the blocking node in this state machine, and every entity should say so plainly when it is.
@@ -79,6 +80,12 @@ Ron → design chat: CONFIRM feedback/architecture-guidance/PROPOSAL_DOMAIN_PLAC
 A single message from Ron containing one of these seven verbs is enough for any entity to know exactly what's being asked, without re-deriving context from a paragraph.
 
 **`NEXT` vs. `STATUS`:** `STATUS` returns the whole board — useful for orientation. `NEXT` returns one line — useful mid-work, when the only thing wanted is "what do I do right this second to stop being the holdup."
+
+### 3.1 Self-verification before reporting a commit
+
+Any entity that pushes a commit — currently only the `udm-exchange` session, but this applies to any future entity with write access — must fetch the raw URL itself and confirm the pushed content actually matches what was intended, **before** reporting it as done. Check at minimum: the version number in the header, and any specific section called out in the handoff instructions as having changed.
+
+A reported completion that turns out not to match on re-check costs more than the extra minute of self-checking would have: it costs a full round-trip (Ron relays a `CONFIRM`, design chat catches the mismatch, Ron relays back, the commit gets redone), and it means every future `CONFIRM` from that entity needs independent re-verification rather than being trusted at face value. Self-verification isn't an optional courtesy — it's what keeps `CONFIRM` meaning "this is actually done" rather than "I attempted this."
 
 ---
 
