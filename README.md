@@ -25,6 +25,7 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 | `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | **Merged** into Architecture Guidance v1.4.0 §10 — `RESOLVED` |
 | Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | **Merged** into Workflow Protocol v1.3.0 §6 — `RESOLVED` |
 | Source/Target/Batch Structure for Commands | `UDM_WORKFLOW_PROTOCOL.md` §3.2/§3.3 | **Merged** into Workflow Protocol v1.6.0 — `RESOLVED` |
+| Raw URL Required on Cross-Document References | `UDM_WORKFLOW_PROTOCOL.md` (proposed new §3.4) | v0.1.0 draft, under review |
 
 ## Open item
 
