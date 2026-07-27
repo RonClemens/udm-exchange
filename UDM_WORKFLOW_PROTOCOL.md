@@ -1,11 +1,12 @@
 # UDM Effort — Workflow Protocol: States, Commands, and Handoff Triggers
 
-**Version:** 1.2.0
-**Last updated:** 2026-07-26
+**Version:** 1.3.0
+**Last updated:** 2026-07-27
 **Status:** Active
 **Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.1.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
 
 **Changelog:**
+- **v1.3.0** — Made §6's stall-check obligation symmetric across all three AI entities, not just design chat. Each entity now has the same concrete, written instruction rather than the principle applying by rule to one and by habit to the others.
 - **v1.2.0** — Added `NEXT`, a seventh command: unlike `STATUS` (full picture), `NEXT` returns exactly one concrete action to unblock whichever actor is currently the holdup — added because Ron needed a trigger that resolves to a single instruction, not a board to interpret.
 - **v1.1.0** — Added §6, the accountability convention, at Ron's explicit request: every entity, including Ron, can be the blocking node in this state machine, and every entity should say so plainly when it is.
 - **v1.0.0** — Initial version.
@@ -51,7 +52,7 @@ Any document can also jump straight to **SUPERSEDED** from any state if it's ove
 
 ## 3. The command vocabulary
 
-Six verbs. Ron issues these (since Ron is the only entity in contact with all others); each entity recognizes them as unambiguous triggers rather than needing to infer intent from prose.
+Seven verbs. Ron issues these (since Ron is the only entity in contact with all others); each entity recognizes them as unambiguous triggers rather than needing to infer intent from prose.
 
 | Command | Form | What it does | State transition |
 |---|---|---|---|
@@ -102,10 +103,14 @@ This protocol formalizes triggers and status-tracking on top of the round-trip a
 
 ## 6. Accountability convention
 
-Every entity in this state machine can become the blocking node — a coding session that hasn't picked up a `HANDOFF`, design chat sitting on a revision, or Ron holding documents at `READY` waiting to be relayed. The state machine only works if being the bottleneck is named plainly and promptly by whichever entity notices it, rather than absorbed quietly.
+Every entity in this state machine can become the blocking node — a coding session that hasn't picked up a `HANDOFF`, design chat sitting on a revision, or Ron holding documents at `READY` waiting to be relayed. The state machine only works if being the bottleneck is named plainly and promptly by whichever entity notices it, rather than absorbed quietly. This applies equally to Ron and to all three AI entities — and is written the same concrete way for each of them, not just one:
 
-**The rule:** if a document has been sitting at `READY` or `FEEDBACK_READY` for more than one exchange without a `HANDOFF` or `CONFIRM` moving it forward, the next entity that touches the conversation says so directly — no hedging, no burying it after other content. This applies equally to Ron and to the three AI sessions.
+**At the start of any UDM-related exchange, each AI entity checks for its own stalled items before doing anything else, and names them plainly if found — not as a footnote, not folded into other work.** "Stalled" means: anything in that entity's own scope sitting at `READY` or `FEEDBACK_READY` for more than one exchange with no `HANDOFF` or `CONFIRM` moving it forward.
 
-**In practice, for design chat specifically:** at the start of any UDM-related exchange, if the status board shows items stalled at `READY`/`FEEDBACK_READY`, design chat names the count and which items before doing anything else — the same discipline the state machine already applies to documents, applied to whichever entity is currently the holdup.
+Concretely, per entity:
 
-**Worked example:** three documents (`UDM_ROLES_AND_HANDOFF.md` v1.1.0, this protocol, and the `@domain-placeholder` proposal) are `READY` as of 2026-07-26, with `HANDOFF` triggers logged but not yet relayed. If a future exchange starts and these are still sitting at `READY` with no `CONFIRM`, that's the first thing design chat says — not a footnote.
+- **Design chat** — before responding to a new UDM-related request, checks the status board for anything stalled at `READY`/`FEEDBACK_READY` and names the count and which items first.
+- **`udm-exchange` session** — before acting on a new commit request, checks (a) whether anything in its own queue is unpushed, and (b) whether the requester's understanding of a document's current state matches what's actually on `main` — e.g. flags it if someone is treating a document as still `READY` when it's already `COMMITTED` or further along.
+- **Workbench session** — before pushing new feedback or migration-plan updates, checks whether any of its own prior `FEEDBACK_READY` items — produced but not yet confirmed committed — are still outstanding, and names them.
+
+No new command and no new state are needed for this — it's a discipline applied consistently, the same way the state machine already tracks documents, now applied to whichever entity is currently the holdup.

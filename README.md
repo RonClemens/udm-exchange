@@ -10,10 +10,11 @@ Shared, public-safe methodology documents for the Unified Data Model (UDM) effor
 
 | Document | Version | Location |
 |---|---|---|
-| Architecture Guidance | v1.3.0 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
+| Architecture Guidance | v1.4.0 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
 | PKM Entity Model | v0.2.1 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
 | SE Workbench Migration Plan | v0.2.0 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
-| UDM Workflow Protocol | v1.2.0 | `UDM_WORKFLOW_PROTOCOL.md` |
+| UDM Workflow Protocol | v1.3.0 | `UDM_WORKFLOW_PROTOCOL.md` |
+| UDM Roles & Handoff | **v1.0 content, no version header** — see open item below | `UDM_ROLES_AND_HANDOFF.md` |
 
 ## Pending proposals
 
@@ -21,8 +22,12 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 
 | Proposal | Targets | Status |
 |---|---|---|
-| `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | v0.1.0 draft, Workbench feedback committed, awaiting design-chat review |
-| Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | v0.1.0 draft, under review |
+| `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | **Merged** into Architecture Guidance v1.4.0 §10 — `RESOLVED` |
+| Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | **Merged** into Workflow Protocol v1.3.0 §6 — `RESOLVED` |
+
+## Open item
+
+**`UDM_ROLES_AND_HANDOFF.md` is not actually at v1.1.0.** Both `UDM_WORKFLOW_PROTOCOL.md` and `ARCHITECTURE_GUIDANCE.md` (as of the 2026-07-27 handoff) reference it as a companion document at v1.1.0, but the file committed here has never had a version header, and no v1.1.0 content has been delivered — a 2026-07-27 handoff listed it for this update but the attachment itself didn't come through (only a placeholder). Needs an actual v1.1.0 (or a decision that the current content already qualifies and just needs a header stamped on it) before every document in this repo is citing a version of it that doesn't exist as committed content.
 
 ---
 
