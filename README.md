@@ -13,6 +13,7 @@ Shared, public-safe methodology documents for the Unified Data Model (UDM) effor
 | Architecture Guidance | v1.3.0 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
 | PKM Entity Model | v0.2.1 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
 | SE Workbench Migration Plan | v0.2.0 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
+| UDM Workflow Protocol | v1.2.0 | `UDM_WORKFLOW_PROTOCOL.md` |
 
 ## Pending proposals
 
@@ -20,7 +21,8 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 
 | Proposal | Targets | Status |
 |---|---|---|
-| `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | v0.1.0 draft, under review |
+| `@domain-placeholder` Convention | Architecture Guidance (proposed new §11) | v0.1.0 draft, Workbench feedback committed, awaiting design-chat review |
+| Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | v0.1.0 draft, under review |
 
 ---
 
