@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
 **Reports against:** PKM Migration Plan v0.2.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.2.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.3.0 (2026-07-28) — added §5, documenting PKM Migration Step 8 (AAF Milestone A/B/C occurrence tracking) — a new `AcquisitionMilestone` entity — plus a direct answer to §5 optional-follow-up #6 from v1.2.0 (whether acquisition-phase/pathway concepts belong in the PKM model). Renumbered former §5 (optional follow-ups) to §6 and updated item #6's own text to reflect the answer.
 - v1.2.0 (2026-07-27) — added §4, documenting the Acquisition Phase Workbench (new default guided navigation). No PKM entity/schema change beyond one additive evidence-type enum value. Renumbered former §3 (optional follow-ups) to §5 and added one new follow-up item.
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
@@ -67,7 +68,53 @@ This app's default navigation is no longer a flat tab list. It's now a "left-to-
 
 **Verification:** clean typecheck/build in both workspaces; both server-backed and static (`localStorage`) deploy modes smoke-tested end-to-end via Playwright with zero console errors, including default-landing, baseline/phase switching, guided-panel status persistence across reload, Edit Mode overrides on the new guidance prose, and confirmation that two unrelated existing tabs are unaffected.
 
-## 5. Optional follow-ups (not blockers)
+## 5. Update since v1.2.0 (2026-07-28): AAF Milestone A/B/C occurrence tracking (PKM Migration Step 8)
+
+This directly answers §6 optional-follow-up #6 from v1.2.0: whether an acquisition-phase/pathway concept belongs
+in the PKM model itself. Short answer, with the actual gap this surfaced:
+
+- **`AcquisitionPathway` needs no data-layer entity.** It's already PKM-conformant as a plain, stable, external,
+  human-meaningful id (`"MCA"`) per PKM §4 / Architecture Guidance §9 — its name, definition, and phase banding
+  are DoD Adaptive Acquisition Framework doctrine, identical for every program that uses MCA, not per-program data
+  the way a `Program` or `Project` record's name/description is. This is an "already conformant, no entity needed"
+  finding, the same category PKM Migration Step 0 recorded for CI↔LogicalSubsystem cardinality — flagged here
+  rather than left to be rediscovered.
+- **`AcquisitionPhase` (MSA/TMRR/EMD/PD/OS) also needs no stored entity.** A baseline's "current phase" is already
+  fully and cheaply derived from its own `Milestone` records (first SETR event not yet `Complete`) — this app's
+  existing "derived, not stored" design choice, unchanged by this pass. Storing it would create a second source of
+  truth that could silently drift from the `Milestone` records that already determine it, for no new information.
+- **The actual gap: AAF's own decision gates (Milestone A/B/C) had no occurrence data at all.** Unlike SETR events
+  (SRR–PRR), which PKM Migration Step 3 already promoted from static definitions into real per-baseline `Milestone`
+  records (status, dates), MS-A/B/C existed only as static catalog metadata
+  (`methodology/guidance/aafPhaseGuidance.ts`'s `MCA_MILESTONE_GATES`) with no way to record whether a given
+  baseline had actually passed a given gate, or when — the same gap SETR events had before Step 3. This pass adds
+  a new entity, `AcquisitionMilestone` (`id`, `event: "MS-A"|"MS-B"|"MS-C"`, `pathway`, `baselineId`, `status`,
+  `actualDate`, `plannedDate`), following the identical Step-3 promotion pattern, seeded for both baselines
+  (Baseline A: all three gates `Complete`, consistent with its current phase already being Production &
+  Deployment; Baseline B: only Milestone A `Complete`, consistent with its current phase still being Technology
+  Maturation & Risk Reduction).
+- **Deliberately a separate entity from `Milestone`, not a broadened `MilestoneEvent` union.** MS-A/B/C are
+  acquisition-decision events (DAU/AAF doctrine — resourcing and program-level authorization to proceed), not SE
+  technical reviews, and `MILESTONE_EVENTS`' fixed SRR–PRR ordering is load-bearing for this app's
+  `deriveCurrentMilestone()` ("first non-Complete gate in canonical order") — folding AAF events into that
+  array/type would require re-deriving that ordering assumption for no benefit, since AAF milestones already
+  relate to SETR events structurally via each phase's `entryMilestone`/`exitMilestone` fields, not by shared
+  identity.
+- **UI**: the Acquisition Phase Workbench's entry/exit gate display (previously static name + decision-summary
+  text only) now shows each gate's real per-baseline status via the same click-to-set status-pill interaction the
+  CDRL panel below it already uses — no new interaction pattern introduced.
+
+**Schema footprint:** one additive entity (`AcquisitionMilestone`), zero changes to any existing entity or field.
+Coexist-then-deprecate is not applicable here since nothing existing is superseded — this is pure net-new
+structure filling a gap that had no prior representation at all, not a promotion of an existing free-text field
+(contrast with Steps 2, 3, 5, and 7, which each had a prior free-text/enum field to coexist alongside).
+
+**Verification:** clean typecheck/build in both workspaces; Playwright smoke test covering default-landing,
+gate-status click-to-set on both baselines, persistence across reload, the existing All Tabs toggle, and the
+PDKM Promises tab rendering the new entity's group without errors — zero console errors, zero regressions in
+unrelated tabs.
+
+## 6. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
@@ -76,7 +123,7 @@ These surfaced during implementation and are offered as candidate topics for con
 3. **Gap's evidence cardinality**: this implementation used a single `foundInEntityType`/`foundInEntityId` reference per Gap (one location per finding). Real data already shows a finding can be "found in" one place while being *referenced by* multiple other mechanisms (the CI flag + Delta Matrix row case in Step 6) — worth a future pass on whether Gap needs to support multiple `foundIn` references, not just multiple things pointing *at* it.
 4. **Requirement/VerificationEvent/ChecklistItem decomposition of `Specification.sections`** remains deferred, per Step 4's and Step 5's own explicit scoping — flagged here only so it isn't lost as a known-remaining slice, not because it needs to happen next.
 5. **Promises UI major-group taxonomy (§3)** is this app's own judgment call, not a PKM-derived structure — flagged in case a future cross-app Promises UI conversation wants to compare notes on grouping approaches.
-6. **Acquisition-phase/pathway modeling (§4)** — whether a phase/pathway concept like `AcquisitionPhase`/`AcquisitionPathway` belongs in the PKM model itself (as a cross-app entity), or should stay purely app-side methodology/UI content the way this app has implemented it, is genuinely open. This app took the latter approach for now purely because it was the smaller, faster, most reversible first slice — not because of any assessment that it's the right long-term home for the concept.
+6. **Acquisition-phase/pathway modeling (§4) — answered in §5 above, resolved.** `AcquisitionPhase` and `AcquisitionPathway` both stay app-side methodology/derived content, not PKM entities (already-conformant-as-a-union and derived-not-stored respectively). The actual gap this question surfaced — AAF Milestone A/B/C had no occurrence data at all — is closed by the new `AcquisitionMilestone` entity (§5). Not offered as a candidate PKM-entity addition: this app's own Milestone entity is already the precedent (a per-baseline gate-occurrence shape), so if a second app independently needs the same AAF-milestone-occurrence concept, extending PKM's own `Milestone` entity description ("SETR gate... etc.") to explicitly cover acquisition-decision gates generically — rather than adding a whole second parallel entity to the canonical model — may be the better fit; flagged here for design chat's judgment, not decided by this app.
 
 ---
 
