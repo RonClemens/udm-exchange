@@ -1,10 +1,11 @@
 # Process Knowledge Model (PKM) — Entity & Relationship Model
 
-**Version:** 0.2.1 (Exploratory / Draft — not yet implemented in any app)
-**Last updated:** 2026-07-25
-**Companion to:** Reusable SE Webapp Architecture Guidance v1.3.0 (§9, Forward Compatibility with a UDM)
+**Version:** 0.2.2 (Exploratory / Draft — not yet implemented in any app)
+**Last updated:** 2026-07-28
+**Companion to:** Reusable SE Webapp Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md)) (§9, Forward Compatibility with a UDM)
 
 **Changelog:**
+- **v0.2.2** — Corrected stale cross-reference: `Companion to:` cited Architecture Guidance v1.3.0, which had drifted two versions behind current (v1.4.0); §9's content and numbering are unaffected. Added the raw URL per Workflow Protocol §3.4. Documentation-only, no structural change.
 - **v0.2.1** — Added SE Workbench's `AbCompatibilityRow` as real-world evidence toward open question #1 (§5). No structural change; documentation note only.
 - **v0.2.0** — Corrected CI↔LogicalSubsystem relationship from one-to-many to many-to-many (§2, §3), per standard SE allocation-matrix practice (SEBoK Physical Architecture process). Resolves the conflict flagged in SE Workbench's v0.1.0 conformance review.
 - **v0.1.0** — Initial draft.

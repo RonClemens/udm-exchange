@@ -1,10 +1,11 @@
 # SE Workbench — PKM Migration Plan
 
-**Version:** 0.2.0 (Draft — for Workbench repo feedback)
+**Version:** 0.2.1 (Draft — for Workbench repo feedback)
 **Target repo:** the SE Workbench app ("PDR Reconciliation & Baseline Alignment Workbench")
-**Based on:** PKM Entity & Relationship Model v0.2.0, Architecture Guidance v1.3.0
+**Based on:** PKM Entity & Relationship Model v0.2.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 
 **Changelog:**
+- **v0.2.1** — Corrected stale cross-reference: `Based on:` cited PKM Entity Model v0.2.0 and Architecture Guidance v1.3.0, both since revved (now v0.2.1 and v1.4.0) without this plan's header keeping pace. No step content changed. Added raw URLs per Workflow Protocol §3.4.
 - **v0.2.0** — Renamed this plan's numbered units from "Phase" to "Step" to resolve terminology collision with Architecture Guidance §7's own migration-sequencing phases. Expanded Step 2's blast radius to include `sempExport.ts` and `recoveryProgramGuidance.ts`, and flagged its dependency on Architecture Guidance's pending content-split step. Carved `AbCompatibilityRow` out of Step 2's single-`baselineId` treatment. Added explicit methodology/data split note to Step 3. All per SE Workbench's round-2 feedback.
 - **v0.1.0** — Initial draft.
 **Purpose:** A concrete, phased plan for migrating this app's schema toward PKM conformance, sequenced by regression risk per Architecture Guidance §7 (mechanical/low-risk first, judgment-heavy content work last). This is a plan for feedback, not an implementation instruction — no code should change as a direct result of this document alone.

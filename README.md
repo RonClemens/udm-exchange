@@ -11,8 +11,8 @@ Shared, public-safe methodology documents for the Unified Data Model (UDM) effor
 | Document | Version | Location |
 |---|---|---|
 | Architecture Guidance | v1.4.0 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
-| PKM Entity Model | v0.2.1 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
-| SE Workbench Migration Plan | v0.2.0 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
+| PKM Entity Model | v0.2.2 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
+| SE Workbench Migration Plan | v0.2.1 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
 | UDM Workflow Protocol | v1.8.0 | `UDM_WORKFLOW_PROTOCOL.md` |
 | UDM Roles & Handoff | v1.1.0 | `UDM_ROLES_AND_HANDOFF.md` |
 
