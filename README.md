@@ -41,6 +41,10 @@ architecture-guidance/     # App-level architecture guidance — provider abstra
 
 pkm/                        # Process Knowledge Model — the cross-program SE/PM/CM
                              ontology. Canonical source. Status: exploratory draft.
+  examples/                   # Non-canonical: synthetic pseudo-data instance graphs
+                               validating a PKM revision holds together end-to-end.
+                               Fictional content only, per this repo's content-boundary
+                               rule. Not a PDKM template or schema recommendation.
 
 migration-plans/            # Per-app plans for adopting the PKM model.
   <app-name>/                 One folder per participating app.

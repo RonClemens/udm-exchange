@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "pdkmExampleVersion": "0.2.0",
+    "companionTo": "PKM Entity Model v0.3.0",
+    "generated": "2026-07-28",
+    "synthetic": true,
+    "note": "All content is fictional, generated to validate PKM v0.3.0 structure. Not real program data. Fields set to null represent PDKM content (e.g. requirement text, gap findings) intentionally omitted from this structural example."
+  },
+
+  "programs": [
+    {
+      "id": "PROGRAM-001",
+      "name": "Synthetic Sensor Recapitalization Program",
+      "description": "Coordinates modernization of a fictional legacy sensor line across two concurrent baselines."
+    }
+  ],
+
+  "projects": [
+    {
+      "id": "PROJECT-001",
+      "programId": "PROGRAM-001",
+      "name": "Synthetic Sensor Avionics Refresh",
+      "baselineIds": ["BASELINE-A", "BASELINE-B"]
+    }
+  ],
+
+  "baselines": [
+    {
+      "id": "BASELINE-A",
+      "projectId": "PROJECT-001",
+      "baselineType": "Product",
+      "reconciledIntoBaselineId": null
+    },
+    {
+      "id": "BASELINE-B",
+      "projectId": "PROJECT-001",
+      "baselineType": "Functional",
+      "reconciledIntoBaselineId": null
+    }
+  ],
+
+  "milestones": [
+    {
+      "id": "MS-A-PDR",
+      "baselineId": "BASELINE-A",
+      "milestoneType": "SETR",
+      "event": "PDR",
+      "pathway": null,
+      "status": "Complete",
+      "actualDate": "2024-03-14",
+      "plannedDate": "2024-03-01",
+      "establishesBaselineId": "BASELINE-A"
+    },
+    {
+      "id": "MS-B-SRR",
+      "baselineId": "BASELINE-B",
+      "milestoneType": "SETR",
+      "event": "SRR",
+      "pathway": null,
+      "status": "Complete",
+      "actualDate": "2025-01-09",
+      "plannedDate": "2025-01-15",
+      "establishesBaselineId": null
+    },
+    {
+      "id": "MS-B-MSA",
+      "baselineId": "BASELINE-B",
+      "milestoneType": "AcquisitionGate",
+      "event": "MS-A",
+      "pathway": "MCA",
+      "status": "Complete",
+      "actualDate": "2025-02-01",
+      "plannedDate": "2025-02-15",
+      "establishesBaselineId": null
+    }
+  ],
+
+  "checklistItems": [
+    {
+      "id": "CHK-B-SRR-001",
+      "milestoneId": "MS-B-SRR",
+      "criterion": "Mission need statement approved",
+      "status": "Met",
+      "evidenceType": "Deliverable",
+      "evidenceId": "DEL-001",
+      "domain": "Requirements"
+    }
+  ],
+
+  "logicalSubsystems": [
+    { "id": "LS-001", "baselineId": "BASELINE-A", "name": "Signal Processing" },
+    { "id": "LS-002", "baselineId": "BASELINE-A", "name": "Power Distribution" }
+  ],
+
+  "configurationItems": [
+    {
+      "id": "CI-001",
+      "baselineId": "BASELINE-A",
+      "name": "Synthetic Processor Module",
+      "subsystemIds": ["LS-001", "LS-002"],
+      "primarySubsystemId": "LS-001"
+    },
+    {
+      "id": "CI-002",
+      "baselineId": "BASELINE-A",
+      "name": "Synthetic Power Board",
+      "subsystemIds": ["LS-002"],
+      "primarySubsystemId": "LS-002"
+    }
+  ],
+
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "baselineId": "BASELINE-A",
+      "statement": null,
+      "satisfiedByCiIds": ["CI-001", "CI-002"],
+      "parentRequirementId": null,
+      "verifiedByVerificationEventId": "VER-001"
+    }
+  ],
+
+  "deliverables": [
+    {
+      "id": "DEL-001",
+      "requiredByMilestoneId": "MS-B-SRR",
+      "type": "SSDD",
+      "producedForId": "PROJECT-001"
+    }
+  ],
+
+  "gaps": [
+    {
+      "id": "GAP-001",
+      "baselineId": "BASELINE-A",
+      "blocksMilestoneId": null,
+      "blocksChecklistItemId": "CHK-B-SRR-001",
+      "foundInEntityType": "CI",
+      "foundInEntityId": "CI-001",
+      "description": null
+    }
+  ],
+
+  "actionItems": [
+    {
+      "id": "ACT-001",
+      "resolvesGapId": "GAP-001",
+      "assignedRole": "Lead Systems Engineer",
+      "status": "Open"
+    }
+  ],
+
+  "verificationEvents": [
+    {
+      "id": "VER-001",
+      "verifiesRequirementId": "REQ-001",
+      "producesEvidenceForChecklistItemId": null,
+      "method": "Test",
+      "result": "Pass"
+    }
+  ],
+
+  "speculative": {
+    "note": "PKM Entity Model §5 open question #1 (Baseline reconciliation) is unresolved. Both shapes below are illustrative only — do not build against either as stable schema.",
+    "baselineFieldOption": {
+      "description": "If reconciledIntoBaselineId stays a field on Baseline itself.",
+      "example": { "BASELINE-B.reconciledIntoBaselineId": "BASELINE-A" }
+    },
+    "reconciliationEventOption": {
+      "description": "If reconciliation becomes a distinct entity instead, per the AbCompatibilityRow-style evidence in PKM §5.",
+      "reconciliationEvents": [
+        {
+          "id": "REC-001",
+          "reconciledFromBaselineId": "BASELINE-B",
+          "reconciledIntoBaselineId": "BASELINE-A",
+          "compatibilityStatus": "Under Review",
+          "lastReviewedDate": "2026-06-01"
+        }
+      ]
+    }
+  }
+}
