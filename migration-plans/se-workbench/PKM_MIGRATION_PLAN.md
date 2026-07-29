@@ -1,10 +1,11 @@
 # SE Workbench — PKM Migration Plan
 
-**Version:** 0.3.1 (Draft — for Workbench repo feedback)
+**Version:** 0.4.0 (Draft — for Workbench repo feedback)
 **Target repo:** the SE Workbench app (formerly "PDR Reconciliation & Baseline Alignment Workbench")
-**Based on:** PKM Entity & Relationship Model v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
+**Based on:** PKM Entity & Relationship Model v0.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 
 **Changelog:**
+- **v0.4.0** — Added Step 9: implement `Role` as a first-class entity (PKM v0.5.0 §2–§3), per Ron's go-ahead to proceed now, decoupled from the broader SEMP-generation proposal decision. Scoped directly from Workbench's own estimate in their Migration Plan §10 item 3 response (new entity + CRUD route + client wiring across both type-mirror files + admin UI + `owner`→`assignedRoleId` migration).
 - **v0.3.1** — Resolved §9 item 5 (no hard deadline needed for the `AcquisitionMilestone` coexistence window, per Workbench's Step 9 report). Added a note under Step 2 (§2 below): PKM v0.4.0 replaced Baseline's reserved `reconciledFromBaselineId`/`reconciledIntoBaselineId` fields with a new `ReconciliationEvent` entity — since Workbench never populated those reserved fields, this is a documentation-only note for Workbench's own future Step 2 record, not a migration action; no code change implied unless/until Workbench chooses to model reconciliation at all.
 - **v0.3.0** — Steps 1–7 recorded as **complete**, per Workbench's own status report v1.3.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/feedback/se-workbench/PKM_MIGRATION_STATUS_REPORT.md)) — §0 updated, §8 sequencing table annotated. Open questions §9 items 1, 2, and 4 marked **resolved**, with the implementation evidence that answered each, rather than left presumed here. Item 3 marked **resolved locally, open for cross-app default** — matches Workbench's own framing of it as a candidate default, not a final answer. Added **Step 8 — Consolidate `AcquisitionMilestone` into `Milestone`**: canonical guidance for folding Workbench's already-implemented standalone `AcquisitionMilestone` entity (their own Step 8, status report §5) into the PKM's now-broadened `Milestone` entity via the new `milestoneType` discriminator (PKM v0.3.0/v0.3.1, §2–§3). This is new guidance *from* this plan to Workbench, not a report *of* something Workbench already did — the direction is reversed from every other step so far.
 - **v0.2.1** — Corrected stale cross-reference: `Based on:` cited PKM Entity Model v0.2.0 and Architecture Guidance v1.3.0, both since revved (now v0.2.1 and v1.4.0) without this plan's header keeping pace. No step content changed. Added raw URLs per Workflow Protocol §3.4.
@@ -58,7 +59,7 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- `satisfiedByCiIds` modeled many-to-many. Real seed data (`delta-001`) confirmed this is a genuine case, not a hypothetical — **resolves open question §9 item 1 below.**
+- `satisfiedByCiIds` modeled many-to-many. Real seed data (`delta-001`) confirmed this is a genuine case, not a hypothetical — **resolves open question §10 item 1 below.**
 - `parentRequirementId` demonstrated via a second requirement implicitly part of the first.
 
 ---
@@ -77,7 +78,7 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- Real unification demonstrated: a finding previously tracked by two separate mechanisms (a CI's over-decomposition flag and a Delta Matrix row) now references one `Gap` record — **resolves open question §9 item 2 below.**
+- Real unification demonstrated: a finding previously tracked by two separate mechanisms (a CI's over-decomposition flag and a Delta Matrix row) now references one `Gap` record — **resolves open question §10 item 2 below.**
 - `Recommendation` deliberately left untouched here, picked up in Step 7.
 - Workbench's own follow-up (status report §6 item 3): current implementation uses a single `foundInEntityType`/`foundInEntityId` per Gap, but real data shows a finding can be found in one place while referenced by multiple other mechanisms — flagged as a candidate future PKM cardinality question, not resolved by this plan.
 
@@ -89,7 +90,7 @@
 
 - `Recommendation.owner` converted from free text to a five-role taxonomy: Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager.
 - `resolvesGapId` added, coexisting with the existing `relatedCiId`.
-- **Partially resolves open question §9 item 3 below** — resolved locally; Workbench's own status report frames this as "a pragmatic starting cut, not a definitive one" and asks whether it's a reasonable cross-app default. That question is not answered by this plan.
+- **Partially resolves open question §10 item 3 below** — resolved locally; Workbench's own status report frames this as "a pragmatic starting cut, not a definitive one" and asks whether it's a reasonable cross-app default. That question is not answered by this plan.
 
 ---
 
@@ -111,11 +112,29 @@
 
 ---
 
-## 9. Open questions for Workbench's team before implementation starts
+## 9. Step 9 — Implement `Role` as a first-class entity (new, approved to proceed)
+
+**Approved to proceed now**, decoupled from the broader SEMP-generation proposal decision (Ron, 2026-07-29) — this doesn't wait on that proposal's other open items.
+
+This is guidance *to* Workbench again, same direction as Step 8, but this time scoped directly from Workbench's own estimate (Migration Plan §10 item 3 response) rather than design chat guessing at implementation cost:
+
+- **New `Role` entity:** `id`, `projectId`, `name`, `authorityDescription` (optional), `isDefault` (boolean). Seed with the existing five-role set (Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager) as `isDefault: true` records — this preserves the taxonomy Workbench already validated, just makes it data instead of a hardcoded union.
+- **New CRUD route** for `Role` (create/list/update/delete), mirroring the pattern already used for every other entity.
+- **`ActionItem`/`Recommendation.owner` migrates to `assignedRoleId`**, coexisting with `owner` during the transition — same coexist-then-deprecate discipline as every step so far. `owner` is not removed in this step.
+- **Admin surface:** the existing fixed dropdown (`RecommendationsPage.tsx`) needs to read live `Role` records instead of the hardcoded array, plus a minimal add/remove-role UI — Workbench's own estimate frames this as comparable in scope to a full step, not a quick patch, and this plan agrees.
+- **Both type-mirror files** need the `Role` type and the `assignedRoleId` field added consistently, per Workbench's own standard practice across every prior step.
+
+**Risk:** low-moderate, mechanical in shape (new entity + CRUD + coexisting reference field, the same recipe as Steps 1–3) but touches more surface area than those did (a new admin UI, not just data modeling) — closer in scope to Step 7's original role-taxonomy work than to Step 1's pure additive record creation.
+
+**Not part of this step:** any `RiskItem`-side use of `Role` (proposed in the SEMP-generation proposal, `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §3.1) — that's a separate, still-gated decision. This step is scoped to closing Migration Plan §10 item 3 alone.
+
+---
+
+## 10. Open questions for Workbench's team before implementation starts
 
 1. ~~Does a `Requirement` in this app's real data ever get satisfied by more than one CI, or is that always one-to-one?~~ **Resolved.** Yes — confirmed many-to-many by real seed data (`delta-001`), per status report §1 Step 4. No further input needed.
 2. ~~For Gap unification (Step 6): are there UI features, filters, or reports built specifically against `DeltaMatrixRow`, `overDecompositionFlag`, or `Recommendation` as distinct types that would need parallel updates, or can they be safely generalized?~~ **Resolved.** Successfully unified in practice — one existing finding tracked by two prior mechanisms now references a single `Gap` record, per status report §1 Step 6. A related but distinct question (`foundIn` cardinality — one location per finding vs. multiple) remains open per status report §6 item 3, not this question.
-3. What role taxonomy should `ActionItem`/`Recommendation.owner` constrain to? **Resolved locally, not finally.** Workbench shipped a five-role starting set (status report §1 Step 7) and explicitly asked (status report §6 item 2) whether this is a reasonable default for other apps, or program-specific enough that each app should define its own. Still open as a cross-app question — this plan doesn't presume an answer.
+3. ~~What role taxonomy should `ActionItem`/`Recommendation.owner` constrain to?~~ **Resolved.** Per PKM v0.5.0 §2–§3: `Role` is now a first-class entity, tailorable per program. Step 9 (above) implements this — no longer a cross-app-default question, since the taxonomy is now data, not a fixed enum.
 4. ~~Should Step 2 (Baseline enum→entity) and Architecture Guidance's pending content-split step run as one coordinated effort, or in an explicit order?~~ **Resolved.** Closed per Roles & Handoff v1.1.0 — Workbench coordinated both concerns in a single pass on `recoveryProgramGuidance.ts`.
 5. ~~Does the coexistence window for `AcquisitionMilestone` need a hard deadline, or is "until the gate-status UI is confirmed reading from consolidated `Milestone`" sufficient as a completion criterion on its own?~~ **Resolved.** Per Workbench's Step 9 report: no hard deadline needed.
 
