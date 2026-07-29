@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.6.0
+**Version:** 1.7.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.3.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
+**Reports against:** PKM Migration Plan v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.7.0 (2026-07-29) — added §9, documenting this app's own Step 11: implemented `Role` as a first-class entity per Migration Plan Step 9 / PKM v0.5.0 §2–§3, resolving Migration Plan §10 item 3. Renumbered former §9 (optional follow-ups) to §10 and retired item 2 there (superseded by this step). Updated `Reports against:` to Migration Plan v0.4.0 / Entity Model v0.5.0.
 - v1.6.0 (2026-07-29) — added §8, documenting this app's own Step 10: a first-slice decomposition of `Specification.sections` into `Requirement`/`ChecklistItem`/`VerificationEvent` records, per design chat's ACTION item 2 (closing the gap Steps 4 and 5 both explicitly deferred). Renumbered former §8 (optional follow-ups) to §9.
 - v1.5.0 (2026-07-29) — added §7, recording the standalone `AcquisitionMilestone` entity's actual removal (design chat ACTION item 1: the coexist-then-deprecate window from Step 9/§6 is now closed, not just verified-closeable). Renumbered former §7 (optional follow-ups) to §8. Updated `Reports against:` to PKM Migration Plan v0.3.1 / Entity Model v0.4.0 (both revved since v1.4.0 — the `ReconciliationEvent` addition; documentation-only from this app's side per the Migration Plan's own v0.3.1 note, no action taken here).
 - v1.4.0 (2026-07-29) — added §6, documenting Migration Plan Step 8 (this app's own numbering: Step 9): consolidated the standalone `AcquisitionMilestone` entity into `Milestone` via `milestoneType`, per the canonical model's v0.3.0 broadening. Answers Migration Plan §9 item 5 (coexistence-window deadline). Renumbered former §6 (optional follow-ups) to §7. Also corrected this header's stale `Reports against:` versions (was citing Migration Plan v0.2.0 / Entity Model v0.2.1, two and three revisions behind), per the Migration Plan's own §9 item 5 context and this repo's feedback-staleness convention.
@@ -12,7 +13,7 @@
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
-**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7) and Step 9 (its consolidation into Milestone), plus Step 10 (a first-slice `Specification.sections` decomposition — §8), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
+**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7), Step 9 (its consolidation into Milestone), Step 10 (a first-slice `Specification.sections` decomposition — §8), and Step 11 (`Role` as a first-class entity — §9), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
 
 ---
 
@@ -231,14 +232,47 @@ new record counts; Playwright pass covering the guided checklist panel (Baseline
 TRR milestone surfaces `check-008`), the Specifications tab, and the PDKM Promises tab
 (surfacing the two new requirement statements) — zero console errors, zero regressions.
 
-## 9. Optional follow-ups (not blockers)
+## 9. Update since v1.6.0 (2026-07-29): Role implemented as a first-class entity (this app's Step 11)
+
+Per Migration Plan v0.4.0 Step 9 (canonical guidance *to* this app, same direction as Step 8):
+implements `Role` per PKM Entity Model v0.5.0 §2–§3, resolving Migration Plan §10 item 3 and this
+report's own §10 item 2 below.
+
+- **New `Role` entity:** `id`, `projectId`, `name`, `authorityDescription` (optional), `isDefault`
+  (boolean). Seeded with the existing five-role set (Lead Systems Engineer, CM Lead, Software
+  Lead, Safety Lead, Program Manager) as `isDefault: true` — the exact taxonomy from Step 7,
+  preserved as data instead of a hardcoded union.
+- **New CRUD route** (`/api/roles`), same pattern as every other entity.
+- **`Recommendation.assignedRoleId`** references a `Role` record; `owner` coexists, unmodified,
+  not removed. Backfilled once for all three existing `Recommendation` records via their `owner`
+  value — an unambiguous one-time mapping, not an ongoing sync.
+- **Admin surface:** `RecommendationsPage.tsx`'s assignment dropdown now reads live `Role`
+  records instead of the retired hardcoded array — the actual point of this step, not just a
+  structural reference. A minimal inline "Manage Roles" panel (add/edit/delete) reuses the same
+  DataTable/EntityForm/Modal components every other entity page already uses — no new UI
+  patterns introduced.
+- **`@domain-placeholder` reclassification:** `Role.name`/`authorityDescription` are newly
+  tagged. Reversal from how these values were treated as `RecommendationOwnerRole` (a structural
+  taxonomy, untagged, like `ChecklistItem.domain`) — promoting them to a real, program-tailorable
+  entity flips the classification, since they're no longer fixed structure.
+
+**Schema footprint:** one additive entity (`Role`, 5 seeded records), one additive field on
+`Recommendation` (`assignedRoleId`). Zero fields removed, zero existing records restructured.
+
+**Verification:** clean `tsc -b` build in both workspaces; live-server API checks confirming
+seeded roles and backfilled `assignedRoleId` values; Playwright pass confirming a newly-added
+custom role persists and is immediately selectable in the assignment dropdown (the actual
+tailorability this step exists to provide), the PDKM Promises tab surfaces `Role` values, zero
+regressions in unrelated tabs.
+
+## 10. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
 1. **PKM §5 open question #2** (ChecklistItem domain tagging) is still open. This app's implementation used a plain string attribute as a pragmatic default — real usage may clarify whether "Domain" deserves first-class status.
-2. **Role taxonomy for ActionItem/Recommendation.owner** (Step 7's own deferred decision) was resolved locally with a five-role starting set (Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager). Worth confirming whether this is a reasonable default for other apps building against the same PKM, or program-specific enough that each app should define its own.
+2. ~~**Role taxonomy for ActionItem/Recommendation.owner** (Step 7's own deferred decision) was resolved locally with a five-role starting set...~~ **Resolved by §9 above.** `Role` is now a first-class, program-tailorable entity per PKM v0.5.0 — no longer a cross-app-default question, since the taxonomy is data, not a fixed enum.
 3. **Gap's evidence cardinality**: this implementation used a single `foundInEntityType`/`foundInEntityId` reference per Gap (one location per finding). Real data already shows a finding can be "found in" one place while being *referenced by* multiple other mechanisms (the CI flag + Delta Matrix row case in Step 6) — worth a future pass on whether Gap needs to support multiple `foundIn` references, not just multiple things pointing *at* it.
-4. **Requirement/VerificationEvent/ChecklistItem decomposition of `Specification.sections`** remains deferred, per Step 4's and Step 5's own explicit scoping — flagged here only so it isn't lost as a known-remaining slice, not because it needs to happen next.
+4. ~~**Requirement/VerificationEvent/ChecklistItem decomposition of `Specification.sections`** remains deferred...~~ **Resolved by §8 above** (first slice, spec-002 only — not a full sweep across all five Specifications; the remaining four are still open, but the mechanism is now proven).
 5. **Promises UI major-group taxonomy (§3)** is this app's own judgment call, not a PKM-derived structure — flagged in case a future cross-app Promises UI conversation wants to compare notes on grouping approaches.
 6. **Acquisition-phase/pathway modeling (§4) — answered in §5 above, resolved.** `AcquisitionPhase` and `AcquisitionPathway` both stay app-side methodology/derived content, not PKM entities (already-conformant-as-a-union and derived-not-stored respectively). The actual gap this question surfaced — AAF Milestone A/B/C had no occurrence data at all — is closed by the new `AcquisitionMilestone` entity (§5). Not offered as a candidate PKM-entity addition: this app's own Milestone entity is already the precedent (a per-baseline gate-occurrence shape), so if a second app independently needs the same AAF-milestone-occurrence concept, extending PKM's own `Milestone` entity description ("SETR gate... etc.") to explicitly cover acquisition-decision gates generically — rather than adding a whole second parallel entity to the canonical model — may be the better fit; flagged here for design chat's judgment, not decided by this app.
 
