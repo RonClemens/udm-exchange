@@ -50,10 +50,10 @@ Conventions layered on top (all in `UDM_WORKFLOW_PROTOCOL.md`, current version v
 | Document | Version | Raw URL |
 |---|---|---|
 | Architecture Guidance | v1.4.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md |
-| PKM Entity Model | v0.2.2 (exploratory) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md |
-| SE Workbench Migration Plan | v0.2.1 (draft) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md |
-| UDM Workflow Protocol | v1.8.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_WORKFLOW_PROTOCOL.md |
-| UDM Roles & Handoff | v1.1.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_ROLES_AND_HANDOFF.md |
+| PKM Entity Model | v0.3.1 (exploratory) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md |
+| SE Workbench Migration Plan | v0.3.0 (draft) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md |
+| UDM Workflow Protocol | v1.9.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_WORKFLOW_PROTOCOL.md |
+| UDM Roles & Handoff | v1.2.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_ROLES_AND_HANDOFF.md |
 | This repo's README (structure, conventions) | — | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/README.md |
 
 **Current feedback on file** (`feedback/se-workbench/`): `PKM_MIGRATION_STATUS_REPORT.md` (v1.2.0 — all 7 migration steps complete, plus the Acquisition Phase Workbench and PDKM Promises UI redesign) and `PROPOSAL_DOMAIN_PLACEHOLDER_CONVENTION_RESPONSE.md` (Workbench's response, already folded into Architecture Guidance v1.4.0 §10). Two older feedback docs are marked `Superseded by:` and retained for history only.
