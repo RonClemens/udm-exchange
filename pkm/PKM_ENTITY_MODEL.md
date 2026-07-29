@@ -1,11 +1,12 @@
 # Process Knowledge Model (PKM) — Entity & Relationship Model
 
-**Version:** 0.3.1 (Exploratory / Draft — not yet implemented in any app)
-**Last updated:** 2026-07-28
+**Version:** 0.4.0 (Exploratory / Draft — not yet implemented in any app)
+**Last updated:** 2026-07-29
 **Status:** Draft
 **Companion to:** Reusable SE Webapp Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md)) (§9, Forward Compatibility with a UDM)
 
 **Changelog:**
+- **v0.4.0** — Resolved open question #1 (§5): added `ReconciliationEvent` as a first-class entity (§2, §3), rather than the tentative field-pair on Baseline. Driven by SE Workbench's sharpened evidence — `AbCompatibilityRow` is ongoing interim compatibility tracking, re-reviewed at successive checkpoints, not itself the terminal reconciliation act; a distinct entity is needed to represent that act and consume a set of assessments as its evidence trail. `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId` — reserved since v0.2.0 but never populated in any known implementation — are removed outright rather than deprecated-in-place, since no real data exists to migrate; reconciliation status is now derived by querying `ReconciliationEvent` records, the same derived-not-stored pattern Architecture Guidance's Acquisition Phase concept already established. `ReconciliationEvent`'s evidence linkage is intentionally polymorphic/loose (`evidenceEntityType` + `evidenceEntityIds[]`) rather than naming `AbCompatibilityRow` directly — only one app's real assessment shape exists so far; promote to a first-class PKM entity once a second app's evidence converges on a common shape, not before.
 - **v0.3.1** — Clarified Gap's `blocks` relationship (§2) as mutually exclusive per instance — a given Gap blocks a Milestone *or* a ChecklistItem, never both — surfaced as ambiguous during a pseudo-data validation pass exercising every entity. Documentation-only, no structural change.
 - **v0.3.0** — Corrected Milestone's scope from Project to Baseline (§2, §3). The entity-table text had drifted from the relationship diagram in §3, which already showed Milestone nested under each Baseline — this brings §2 in line with §3, not the reverse. Per-baseline-lineage independence (SE Workbench Step 3: SETR events tracked independently per baseline lineage) confirms Baseline is the correct scope. Broadened Milestone to also cover acquisition-decision gates (e.g. Milestone A/B/C under AAF-style pathways) via a new `milestoneType` (`SETR` | `AcquisitionGate`) discriminator, rather than adding a second parallel entity — informed by SE Workbench's `AcquisitionMilestone` implementation (PKM Migration Step 8; [status report v1.3.0](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/feedback/se-workbench/PKM_MIGRATION_STATUS_REPORT.md), §5–§6 item 6). Added `pathway` and conditional `establishesBaselineId` semantics, type-dependent (§3, §4).
 - **v0.2.2** — Corrected stale cross-reference: `Companion to:` cited Architecture Guidance v1.3.0, which had drifted two versions behind current (v1.4.0); §9's content and numbering are unaffected. Added the raw URL per Workflow Protocol §3.4. Documentation-only, no structural change.
@@ -35,7 +36,7 @@ This model draws on three disciplines, kept intentionally distinct because they 
 |---|---|---|
 | **Program** | Coordinated benefit realization across Projects | has many Projects |
 | **Project** | A temporary effort delivering a defined output | belongs to Program; has one or more Baselines over time |
-| **Baseline** | A formally controlled configuration state at a point in time | belongs to Project; has `baselineType` (Functional / Allocated / Product / Acquisition-Program); established at a Milestone; may coexist with sibling Baselines under the same Project |
+| **Baseline** | A formally controlled configuration state at a point in time | belongs to Project; has `baselineType` (Functional / Allocated / Product / Acquisition-Program); established at a Milestone; may coexist with sibling Baselines under the same Project; reconciliation status with a sibling Baseline is derived by querying `ReconciliationEvent` (see §3), not stored on Baseline itself |
 | **Milestone** | A gate event within a baseline lineage — either a SETR technical review (SRR, SFR, PDR, CDR, TRR, etc.) or an acquisition decision gate (e.g. Milestone A/B/C under an AAF-style pathway) | belongs to **Baseline** (corrected from Project in v0.2.x — see §3); `milestoneType` (`SETR` \| `AcquisitionGate`) distinguishes the two; a `SETR` milestone may establish the Baseline it belongs to and has many ChecklistItems; an `AcquisitionGate` milestone gates progress within an already-established baseline lineage, does not establish a Baseline, and carries a `pathway` reference (e.g. `"MCA"`) |
 | **ChecklistItem** | A discrete readiness criterion within an SE domain | belongs to Milestone; evaluated against evidence from Requirement / CI / Deliverable / VerificationEvent |
 | **LogicalSubsystem** | Functional decomposition layer | belongs to Baseline; allocated to/from CI(s) (many-to-many, see §3); may map to a physical enclosure/structure |
@@ -45,10 +46,11 @@ This model draws on three disciplines, kept intentionally distinct because they 
 | **Gap** | A finding — missing, inconsistent, or non-compliant item | belongs to Baseline; blocks a Milestone *or* a ChecklistItem (mutually exclusive per instance, not both); references the entity it was found in |
 | **ActionItem** | A remediation task | resolves Gap; assigned to a role (not a named person, by default) |
 | **VerificationEvent** | Test / inspection / analysis / demonstration record | verifies Requirement; produces evidence for ChecklistItem |
+| **ReconciliationEvent** | The act of reconciling one Baseline into another — a significant, auditable act, not the ongoing compatibility tracking that feeds it | references `fromBaselineId` and `intoBaselineId`; has `status` (`Proposed` \| `In Progress` \| `Complete`), `initiatedDate`, `completedDate`; evidence trail is polymorphic — `evidenceEntityType` + `evidenceEntityIds[]` — pointing at whatever app-side or future PKM assessment records were consumed, not a fixed PKM entity (see §3) |
 
 ---
 
-## 3. Why Baseline sits between Project and everything technical, why CI↔LogicalSubsystem is many-to-many, and why Milestone belongs to Baseline
+## 3. Why Baseline sits between Project and everything technical, why CI↔LogicalSubsystem is many-to-many, why Milestone belongs to Baseline, and why reconciliation is its own event
 
 This is one structural change from the earlier sketch, and it matters: **CI, Requirement, and LogicalSubsystem are scoped to a Baseline, not directly to a Project.** Without this, "Baseline A's CI-042" and "Baseline B's CI-042" would collide on the same identity. With Baseline as an explicit parent, they're representable as related-but-distinct entities — which is exactly the reconciliation problem that shows up in real modernization/dueling-baseline programs.
 
@@ -63,6 +65,10 @@ The same evidence also motivated broadening Milestone rather than adding a paral
 
 Keeping this as one entity with a type discriminator — rather than two entities related structurally — mirrors how SE Workbench itself related the two: AAF gates reference SETR milestones only through each acquisition phase's `entryMilestone`/`exitMilestone` fields (structural adjacency), not shared identity. A second app that needs SETR events alone, or acquisition gates alone, or both, gets one entity to model against either way, rather than needing to know both exist to model just one.
 
+A fourth correction resolves what was open question #1 through three prior versions: **Baseline reconciliation is a distinct `ReconciliationEvent` entity, not a field pair on Baseline.** The original sketch reserved `reconciledFromBaselineId`/`reconciledIntoBaselineId` directly on Baseline, since v0.2.0 — but SE Workbench's real evidence sharpened over time rather than just repeating: their `AbCompatibilityRow` records are *ongoing interim compatibility tracking*, individually re-reviewed at successive program checkpoints, not the terminal reconciliation act itself. A single field pair on Baseline can't represent "reconciliation is in progress, evidenced by an evolving set of per-interface assessments, and eventually closes as a discrete, dated, auditable act" — that needs its own entity with its own lifecycle. `ReconciliationEvent.fromBaselineId`/`intoBaselineId` now carry the relationship the reserved fields used to; a Baseline's reconciliation status is derived by querying for a `ReconciliationEvent` referencing it, the same derived-not-stored pattern already used for Acquisition Phase (§9 of Architecture Guidance's own forward-compatibility conventions).
+
+`ReconciliationEvent`'s evidence linkage (`evidenceEntityType` + `evidenceEntityIds[]`) is deliberately polymorphic rather than naming `AbCompatibilityRow` directly as a PKM type — only one app's real assessment shape exists so far, and elevating a single app's local structure into canonical PKM content on one data point would be presuming ahead of the evidence, the same discipline this document has followed for every other entity. If a second app's own compatibility-tracking mechanism converges on a similar shape, that's the trigger to consider promoting it to a first-class PKM entity — not before.
+
 ```
 Program
  └── Project
@@ -72,11 +78,12 @@ Program
       └── Baseline (New / in development, e.g. Functional→Allocated)
            ├── LogicalSubsystem ⇄ CI (many-to-many) → Requirement
            └── Milestone (SETR and/or AcquisitionGate) → ChecklistItem
+
+ReconciliationEvent (references two Baselines above by id — not nested under either one)
+ ├── fromBaselineId, intoBaselineId
+ ├── status, initiatedDate, completedDate
+ └── evidenceEntityType + evidenceEntityIds[] (polymorphic, app-side assessment records)
 ```
-
-A `reconciledFromBaselineId` / `reconciledIntoBaselineId` pair of reference fields is worth reserving on Baseline itself, to represent the eventual merge point without needing a special-case entity — open question, see §5.
-
----
 
 ## 4. ID & Reference Conventions (per Architecture Guidance §9)
 
@@ -89,9 +96,9 @@ A `reconciledFromBaselineId` / `reconciledIntoBaselineId` pair of reference fiel
 
 ## 5. Open Questions for Next Discussion
 
-1. **Baseline reconciliation** — does "reconciled into" deserve to be a relationship on Baseline (as sketched above), or a distinct event/entity (e.g., a `ReconciliationEvent`) given it's a significant, auditable act with its own evidence trail? **Real-world evidence:** the SE Workbench app's `AbCompatibilityRow` is a working example of this exact shape — each record compares the same interface across two baselines simultaneously (`baselineAState`, `baselineBIntent`), with a `compatibilityStatus`, `riskNote`, and `lastReviewedDate`, and cannot be assigned to a single Baseline without losing meaning. This is a strong signal toward a distinct `ReconciliationEvent`-style entity rather than a simple field on Baseline, though not yet a final decision.
+1. ~~**Baseline reconciliation** — does "reconciled into" deserve to be a relationship on Baseline, or a distinct event/entity?~~ **Resolved in v0.4.0.** `ReconciliationEvent` is now a first-class entity (§2, §3), driven by SE Workbench's `AbCompatibilityRow` evidence sharpening from "plausible signal" to "this shape can't represent a terminal reconciliation act." No further input needed unless a second app's evidence surfaces a gap in this shape.
 2. **ChecklistItem domain tagging** — the earlier PDR readiness app groups checklist items into 7 SE domains. Should "Domain" be a first-class PKM entity, or just an attribute on ChecklistItem?
-3. **Role model for ActionItem assignment** — "assigned to a role, not a person" was stated above as a default; worth confirming this holds across Program Management too (where accountability is often named), not just SE/CM.
+3. **Role model for ActionItem assignment** — "assigned to a role, not a person" was stated above as a default; worth confirming this holds across Program Management too (where accountability is often named), not just SE/CM. **Status update:** SE Workbench confirmed real-world need for a tailorable, program-configurable role catalog (Migration Plan §9 item 3) — currently on hold pending the broader SEMP-generation architecture decision, not yet folded into this document.
 4. **Program-level parallel Projects** — the model currently allows multiple Baselines per Project, but should it also explicitly allow a Program to run parallel Projects targeting the *same* eventual system (rather than only nesting parallelism inside one Project's Baselines)? This may matter for very large modernization Programs.
 
 ---

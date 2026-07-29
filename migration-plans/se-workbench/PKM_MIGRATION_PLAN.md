@@ -1,10 +1,11 @@
 # SE Workbench — PKM Migration Plan
 
-**Version:** 0.3.0 (Draft — for Workbench repo feedback)
+**Version:** 0.3.1 (Draft — for Workbench repo feedback)
 **Target repo:** the SE Workbench app (formerly "PDR Reconciliation & Baseline Alignment Workbench")
-**Based on:** PKM Entity & Relationship Model v0.3.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
+**Based on:** PKM Entity & Relationship Model v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 
 **Changelog:**
+- **v0.3.1** — Resolved §9 item 5 (no hard deadline needed for the `AcquisitionMilestone` coexistence window, per Workbench's Step 9 report). Added a note under Step 2 (§2 below): PKM v0.4.0 replaced Baseline's reserved `reconciledFromBaselineId`/`reconciledIntoBaselineId` fields with a new `ReconciliationEvent` entity — since Workbench never populated those reserved fields, this is a documentation-only note for Workbench's own future Step 2 record, not a migration action; no code change implied unless/until Workbench chooses to model reconciliation at all.
 - **v0.3.0** — Steps 1–7 recorded as **complete**, per Workbench's own status report v1.3.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/feedback/se-workbench/PKM_MIGRATION_STATUS_REPORT.md)) — §0 updated, §8 sequencing table annotated. Open questions §9 items 1, 2, and 4 marked **resolved**, with the implementation evidence that answered each, rather than left presumed here. Item 3 marked **resolved locally, open for cross-app default** — matches Workbench's own framing of it as a candidate default, not a final answer. Added **Step 8 — Consolidate `AcquisitionMilestone` into `Milestone`**: canonical guidance for folding Workbench's already-implemented standalone `AcquisitionMilestone` entity (their own Step 8, status report §5) into the PKM's now-broadened `Milestone` entity via the new `milestoneType` discriminator (PKM v0.3.0/v0.3.1, §2–§3). This is new guidance *from* this plan to Workbench, not a report *of* something Workbench already did — the direction is reversed from every other step so far.
 - **v0.2.1** — Corrected stale cross-reference: `Based on:` cited PKM Entity Model v0.2.0 and Architecture Guidance v1.3.0, both since revved (now v0.2.1 and v1.4.0) without this plan's header keeping pace. No step content changed. Added raw URLs per Workflow Protocol §3.4.
 - **v0.2.0** — Renamed this plan's numbered units from "Phase" to "Step" to resolve terminology collision with Architecture Guidance §7's own migration-sequencing phases. Expanded Step 2's blast radius to include `sempExport.ts` and `recoveryProgramGuidance.ts`, and flagged its dependency on Architecture Guidance's pending content-split step. Carved `AbCompatibilityRow` out of Step 2's single-`baselineId` treatment. Added explicit methodology/data split note to Step 3. All per SE Workbench's round-2 feedback.
@@ -36,9 +37,10 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- `Baseline` entity created with `baselineType`, `projectId`, `reconciledFromBaselineId`/`reconciledIntoBaselineId` reserved per PKM §5 open question #1 (still open — see §9 below).
+- `Baseline` entity created with `baselineType`, `projectId`, `reconciledFromBaselineId`/`reconciledIntoBaselineId` reserved per PKM §5 open question #1 (at the time; **see note below — superseded in PKM v0.4.0**).
 - Coordinated with `recoveryProgramGuidance.ts`'s own methodology/data content-split, resolving the blocking dependency flagged in v0.2.0 of this plan — confirmed closed per Roles & Handoff v1.1.0's "Resolved since v1.0.0" section.
-- `AbCompatibilityRow` left unmigrated as planned — still flagged as real-world evidence for PKM §5 open question #1.
+- `AbCompatibilityRow` left unmigrated as planned — its evidence directly informed PKM v0.4.0's `ReconciliationEvent` entity (see PKM Entity Model changelog and §3).
+- **Note added in this plan's v0.3.1:** the reserved `reconciledFromBaselineId`/`reconciledIntoBaselineId` fields above were never populated in Workbench's implementation, per Workbench's own confirmation. PKM v0.4.0 replaced them with a `ReconciliationEvent` entity — historical record only, no code action implied for Workbench unless/until reconciliation modeling is actually taken up as a future step.
 
 ---
 
@@ -115,7 +117,7 @@
 2. ~~For Gap unification (Step 6): are there UI features, filters, or reports built specifically against `DeltaMatrixRow`, `overDecompositionFlag`, or `Recommendation` as distinct types that would need parallel updates, or can they be safely generalized?~~ **Resolved.** Successfully unified in practice — one existing finding tracked by two prior mechanisms now references a single `Gap` record, per status report §1 Step 6. A related but distinct question (`foundIn` cardinality — one location per finding vs. multiple) remains open per status report §6 item 3, not this question.
 3. What role taxonomy should `ActionItem`/`Recommendation.owner` constrain to? **Resolved locally, not finally.** Workbench shipped a five-role starting set (status report §1 Step 7) and explicitly asked (status report §6 item 2) whether this is a reasonable default for other apps, or program-specific enough that each app should define its own. Still open as a cross-app question — this plan doesn't presume an answer.
 4. ~~Should Step 2 (Baseline enum→entity) and Architecture Guidance's pending content-split step run as one coordinated effort, or in an explicit order?~~ **Resolved.** Closed per Roles & Handoff v1.1.0 — Workbench coordinated both concerns in a single pass on `recoveryProgramGuidance.ts`.
-5. **New, from Step 8 above:** does the coexistence window for `AcquisitionMilestone` need a hard deadline, or is "until the gate-status UI is confirmed reading from consolidated `Milestone`" sufficient as a completion criterion on its own? Not presumed here — Workbench's call.
+5. ~~Does the coexistence window for `AcquisitionMilestone` need a hard deadline, or is "until the gate-status UI is confirmed reading from consolidated `Milestone`" sufficient as a completion criterion on its own?~~ **Resolved.** Per Workbench's Step 9 report: no hard deadline needed.
 
 ---
 
