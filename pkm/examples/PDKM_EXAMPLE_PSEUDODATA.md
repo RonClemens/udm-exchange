@@ -1,12 +1,13 @@
 # Product/Domain Knowledge Model (PDKM) — Pseudo-Data Example
 
-**Version:** 0.2.0 (Exploratory / Draft — first pass, not a template for real program data)
-**Last updated:** 2026-07-28
+**Version:** 0.3.0 (Exploratory / Draft — first pass, not a template for real program data)
+**Last updated:** 2026-07-29
 **Status:** Draft
-**Companion to:** PKM Entity Model v0.3.1
-**Machine-readable companion:** `pdkm-pseudodata-v0.2.0.json` (§10) — field-for-field match to this document; bump together going forward.
+**Companion to:** PKM Entity Model v0.4.0
+**Machine-readable companion:** `pdkm-pseudodata-v0.3.0.json` (§10) — field-for-field match to this document; bump together going forward.
 
 **Changelog:**
+- **v0.3.0** — PKM v0.4.0 resolved the Baseline-reconciliation open question with a `ReconciliationEvent` entity. §9 replaced: what was speculative ("two candidate shapes, neither decided") is now one concrete instance exercising the real entity. Removed the now-obsolete `Baseline.reconciledIntoBaselineId` field example.
 - **v0.2.0** — Added a companion machine-readable JSON export (§10, `pdkm-pseudodata-v0.2.0.json`) matching this document's entity instances field-for-field, structured for a webapp to fetch/parse as synthetic mock data per Architecture Guidance §4's data-injection pattern. Established the convention that the JSON's version tracks this document's version going forward — bump both together on any content change, not just the JSON. No changes to entity content itself.
 - **v0.1.0** — Initial pseudo-data pass, exercising every PKM v0.3.0 entity (including the new Milestone `milestoneType` discriminator) against a single fully synthetic scenario, to check the model holds together with actual instance data before it's proposed as guidance for a real app's PDKM.
 
@@ -48,7 +49,8 @@ Two things below are flagged as speculative rather than settled: the `Reconcilia
 | id | `BASELINE-A` | `BASELINE-B` |
 | projectId | `PROJECT-001` | `PROJECT-001` |
 | baselineType | `Product` (as-built, near PCA) | `Functional` (early, post-SFR) |
-| reconciledIntoBaselineId | — (see §9, speculative) | — (see §9, speculative) |
+
+Reconciliation status between these two is derived via `ReconciliationEvent` (§9), not stored on Baseline itself.
 
 ---
 
@@ -161,37 +163,32 @@ Two things below are flagged as speculative rather than settled: the `Reconcilia
 
 ---
 
-## 9. Speculative section — Baseline reconciliation (PKM §5 open question #1, still unresolved)
+## 9. Baseline reconciliation — `ReconciliationEvent` (PKM §5 open question #1, resolved in v0.4.0)
 
-Included for scenario completeness only; this section should **not** be read as PDKM guidance until open question #1 is actually resolved.
+No longer speculative — PKM v0.4.0 resolved this with a first-class `ReconciliationEvent` entity. One instance, showing an in-progress reconciliation between the two baselines in this scenario:
 
-**If `reconciledIntoBaselineId` stays a field on Baseline:**
-
-| Field | BASELINE-B |
-|---|---|
-| reconciledIntoBaselineId | `BASELINE-A` *(speculative — not a real decision)* |
-
-**If it becomes a distinct `ReconciliationEvent` entity instead** (the direction PKM §5 leans toward, given `AbCompatibilityRow` evidence):
-
-| Field | REC-001 (speculative) |
+| Field | REC-001 |
 |---|---|
 | id | `REC-001` |
-| reconciledFromBaselineId | `BASELINE-B` |
-| reconciledIntoBaselineId | `BASELINE-A` |
-| compatibilityStatus | `"Under Review"` *(mirrors `AbCompatibilityRow.compatibilityStatus`)* |
-| lastReviewedDate | `2026-06-01` *(fictional)* |
+| fromBaselineId | `BASELINE-B` |
+| intoBaselineId | `BASELINE-A` |
+| status | `In Progress` |
+| initiatedDate | `2026-05-01` *(fictional)* |
+| completedDate | — (not yet complete) |
+| evidenceEntityType | `"AbCompatibilityRow"` *(app-side type name, not a PKM entity — see PKM §3)* |
+| evidenceEntityIds | `["AB-001", "AB-002"]` *(fictional — the interim per-interface assessments feeding this event)* |
 
-Both are shown only to confirm neither shape breaks anything else in the graph above — not to nudge the open question toward either answer.
+Note the shape difference from §7's `Gap.foundInEntityType`/`foundInEntityId`: `ReconciliationEvent`'s evidence is a **set** (`evidenceEntityIds[]`), since one reconciliation is expected to consume many individual assessments over time, not point at a single record the way a Gap's finding-location does.
 
 ---
 
 ## 10. Machine-readable companion
 
-`pdkm-pseudodata-v0.2.0.json` mirrors every entity instance above field-for-field, as a single fetchable file — the same shape as Architecture Guidance §4's `/mock-data/synthetic-program.json` pattern: a webapp loads it at build/dev time as a stand-in `dataSource`, same schema a real PDKM would eventually populate.
+`pdkm-pseudodata-v0.3.0.json` mirrors every entity instance above field-for-field, as a single fetchable file — the same shape as Architecture Guidance §4's `/mock-data/synthetic-program.json` pattern: a webapp loads it at build/dev time as a stand-in `dataSource`, same schema a real PDKM would eventually populate.
 
-**Structure:** one top-level array per entity type (`programs`, `projects`, `baselines`, `milestones`, `checklistItems`, `logicalSubsystems`, `configurationItems`, `requirements`, `deliverables`, `gaps`, `actionItems`, `verificationEvents`), plus a `meta` block and a clearly separated `speculative` block holding both candidate shapes for the still-open Baseline-reconciliation question (§9) — a consuming app should treat anything under `speculative` as non-stable and not build against it.
+**Structure:** one top-level array per entity type (`programs`, `projects`, `baselines`, `milestones`, `checklistItems`, `logicalSubsystems`, `configurationItems`, `requirements`, `deliverables`, `gaps`, `actionItems`, `verificationEvents`, `reconciliationEvents`), plus a `meta` block. The prior `speculative` block is gone as of v0.3.0 — `reconciliationEvents` is now a normal top-level array like every other entity, since the shape it holds is no longer speculative.
 
-**Versioning:** this JSON is versioned identically to this document (currently v0.2.0) and the two are bumped together — the JSON is not an independently-versioned artifact.
+**Versioning:** this JSON is versioned identically to this document (currently v0.3.0) and the two are bumped together — the JSON is not an independently-versioned artifact.
 
 ---
 

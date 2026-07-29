@@ -1,12 +1,11 @@
 {
   "meta": {
-    "pdkmExampleVersion": "0.2.0",
-    "companionTo": "PKM Entity Model v0.3.0",
-    "generated": "2026-07-28",
+    "pdkmExampleVersion": "0.3.0",
+    "companionTo": "PKM Entity Model v0.4.0",
+    "generated": "2026-07-29",
     "synthetic": true,
-    "note": "All content is fictional, generated to validate PKM v0.3.0 structure. Not real program data. Fields set to null represent PDKM content (e.g. requirement text, gap findings) intentionally omitted from this structural example."
+    "note": "All content is fictional, generated to validate PKM v0.4.0 structure. Not real program data. Fields set to null represent PDKM content (e.g. requirement text, gap findings) intentionally omitted from this structural example."
   },
-
   "programs": [
     {
       "id": "PROGRAM-001",
@@ -14,31 +13,29 @@
       "description": "Coordinates modernization of a fictional legacy sensor line across two concurrent baselines."
     }
   ],
-
   "projects": [
     {
       "id": "PROJECT-001",
       "programId": "PROGRAM-001",
       "name": "Synthetic Sensor Avionics Refresh",
-      "baselineIds": ["BASELINE-A", "BASELINE-B"]
+      "baselineIds": [
+        "BASELINE-A",
+        "BASELINE-B"
+      ]
     }
   ],
-
   "baselines": [
     {
       "id": "BASELINE-A",
       "projectId": "PROJECT-001",
-      "baselineType": "Product",
-      "reconciledIntoBaselineId": null
+      "baselineType": "Product"
     },
     {
       "id": "BASELINE-B",
       "projectId": "PROJECT-001",
-      "baselineType": "Functional",
-      "reconciledIntoBaselineId": null
+      "baselineType": "Functional"
     }
   ],
-
   "milestones": [
     {
       "id": "MS-A-PDR",
@@ -74,7 +71,6 @@
       "establishesBaselineId": null
     }
   ],
-
   "checklistItems": [
     {
       "id": "CHK-B-SRR-001",
@@ -86,40 +82,52 @@
       "domain": "Requirements"
     }
   ],
-
   "logicalSubsystems": [
-    { "id": "LS-001", "baselineId": "BASELINE-A", "name": "Signal Processing" },
-    { "id": "LS-002", "baselineId": "BASELINE-A", "name": "Power Distribution" }
+    {
+      "id": "LS-001",
+      "baselineId": "BASELINE-A",
+      "name": "Signal Processing"
+    },
+    {
+      "id": "LS-002",
+      "baselineId": "BASELINE-A",
+      "name": "Power Distribution"
+    }
   ],
-
   "configurationItems": [
     {
       "id": "CI-001",
       "baselineId": "BASELINE-A",
       "name": "Synthetic Processor Module",
-      "subsystemIds": ["LS-001", "LS-002"],
+      "subsystemIds": [
+        "LS-001",
+        "LS-002"
+      ],
       "primarySubsystemId": "LS-001"
     },
     {
       "id": "CI-002",
       "baselineId": "BASELINE-A",
       "name": "Synthetic Power Board",
-      "subsystemIds": ["LS-002"],
+      "subsystemIds": [
+        "LS-002"
+      ],
       "primarySubsystemId": "LS-002"
     }
   ],
-
   "requirements": [
     {
       "id": "REQ-001",
       "baselineId": "BASELINE-A",
       "statement": null,
-      "satisfiedByCiIds": ["CI-001", "CI-002"],
+      "satisfiedByCiIds": [
+        "CI-001",
+        "CI-002"
+      ],
       "parentRequirementId": null,
       "verifiedByVerificationEventId": "VER-001"
     }
   ],
-
   "deliverables": [
     {
       "id": "DEL-001",
@@ -128,7 +136,6 @@
       "producedForId": "PROJECT-001"
     }
   ],
-
   "gaps": [
     {
       "id": "GAP-001",
@@ -140,7 +147,6 @@
       "description": null
     }
   ],
-
   "actionItems": [
     {
       "id": "ACT-001",
@@ -149,7 +155,6 @@
       "status": "Open"
     }
   ],
-
   "verificationEvents": [
     {
       "id": "VER-001",
@@ -159,24 +164,19 @@
       "result": "Pass"
     }
   ],
-
-  "speculative": {
-    "note": "PKM Entity Model §5 open question #1 (Baseline reconciliation) is unresolved. Both shapes below are illustrative only — do not build against either as stable schema.",
-    "baselineFieldOption": {
-      "description": "If reconciledIntoBaselineId stays a field on Baseline itself.",
-      "example": { "BASELINE-B.reconciledIntoBaselineId": "BASELINE-A" }
-    },
-    "reconciliationEventOption": {
-      "description": "If reconciliation becomes a distinct entity instead, per the AbCompatibilityRow-style evidence in PKM §5.",
-      "reconciliationEvents": [
-        {
-          "id": "REC-001",
-          "reconciledFromBaselineId": "BASELINE-B",
-          "reconciledIntoBaselineId": "BASELINE-A",
-          "compatibilityStatus": "Under Review",
-          "lastReviewedDate": "2026-06-01"
-        }
+  "reconciliationEvents": [
+    {
+      "id": "REC-001",
+      "fromBaselineId": "BASELINE-B",
+      "intoBaselineId": "BASELINE-A",
+      "status": "In Progress",
+      "initiatedDate": "2026-05-01",
+      "completedDate": null,
+      "evidenceEntityType": "AbCompatibilityRow",
+      "evidenceEntityIds": [
+        "AB-001",
+        "AB-002"
       ]
     }
-  }
+  ]
 }
