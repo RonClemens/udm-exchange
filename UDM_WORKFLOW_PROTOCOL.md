@@ -1,11 +1,12 @@
 # UDM Effort — Workflow Protocol: States, Commands, and Handoff Triggers
 
-**Version:** 1.8.0
-**Last updated:** 2026-07-27
+**Version:** 1.9.0
+**Last updated:** 2026-07-29
 **Status:** Active
-**Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.1.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
+**Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.2.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
 
 **Changelog:**
+- **v1.9.0** — Added §3.5, **Documentation Drift Reconciliation**: a named convention for handling the case where two-or-more canonical documents describe incompatible mechanics for the same thing, generalized from how this exact situation was actually handled on 2026-07-29 (a design-chat provenance check found `UDM_ROLES_AND_HANDOFF.md` v1.1.0 contradicting both `README.md` and `UDM_EXCHANGE_ACCESS_PROTOCOL.md` on whether Workbench has direct write access to `udm-exchange`). Corrected §5, which asserted "Ron remains the only relay point between the other three entities" — stale in the same way and by the same root cause as the Roles & Handoff line it was restating; see `UDM_ROLES_AND_HANDOFF.md` v1.2.0 for the corrected version. Updated the companion-document reference above to v1.2.0.
 - **v1.8.0** — Made SHA-pinned verification symmetric: §3.1 now requires any entity re-verifying a `CONFIRM` — not just the entity that pushed it — to use a SHA-pinned URL before treating a mismatch as confirmed failure. Added directly after a branch-pinned URL returned stale content on design chat's side across many checks in this thread, while the SHA-pinned URL for the same commit was correct on first fetch. Also added §3.4, the cross-reference convention: structural header citations (`Companion to:`, `Supersedes:`, etc.) should carry a branch-pinned raw URL alongside the name/version, distinct from §3.1's SHA-pinned verification links — a citation should always resolve to current truth, not freeze a moment in time. Correction to a prior draft note: the `@domain-placeholder` convention is Architecture Guidance content (already merged there as §10, v1.4.0) — it was mistakenly listed as pending for this document; it isn't, and has no further action here.
 - **v1.7.0** — §3.1 now requires SHA-pinned raw URLs, not branch-pinned ones, for self-verification and for any downstream `CONFIRM` check. Root cause: a branch-pinned URL (`.../main/<path>`) can lag the actual commit for a period after a push — observed directly when a Workbench self-verification and a design-chat re-check of the same branch-pinned URL disagreed for over an hour after a real, already-landed commit. A SHA-pinned URL (`.../<commit-sha>/<path>`) is immutable and doesn't have this problem by construction. This removes the failure mode rather than catching it after the fact.
 - **v1.6.0** — Added a `Timestamp:` line to the `Source:`/`Target:` header (§3.2), and the `SENT` acknowledgment convention (§3.3): after relaying a batch, Ron posts `SENT` back into the source chat so each chat's own scrollback shows what's actually been relayed versus still pending.
@@ -107,6 +108,18 @@ After Ron actually pastes a batch into its target chat, Ron posts a single-word 
 
 Structural header lines that name another document — `Companion to:`, `Supersedes:`, and equivalents — should carry the document's branch-pinned raw URL alongside its name and version, not name/version alone. Use the branch-pinned URL here, not the SHA-pinned form from §3.1 — a citation should point at current truth, not freeze a moment in time. Scope: structural header-level citations only, not every filename mention in prose. Backfill existing headers alongside each document's next substantive revision.
 
+### 3.5 Documentation Drift Reconciliation
+
+Canonical and near-canonical documents describe the same mechanics from different angles (roles, access, workflow) — they can drift out of agreement with each other, or with actual practice, without any single change being wrong on its own. This happened on 2026-07-29: `UDM_ROLES_AND_HANDOFF.md` v1.1.0 said Workbench "does not commit anything to `udm-exchange` directly," while `README.md` and `UDM_EXCHANGE_ACCESS_PROTOCOL.md` had already documented scoped direct-write access since 2026-07-25/26 — three canonical-ish documents, two agreeing with each other and with observed commits, one lagging.
+
+**When any entity finds two or more documents describing incompatible mechanics for the same thing:**
+
+1. **Flag it via `STATUS`, don't resolve it unilaterally** — even if it's obvious which document is stale. Cite both (or all) conflicting documents directly, by name and quoted line, not by characterization alone.
+2. **The flag routes to Ron for a decision** — which document is authoritative, whether practice has actually diverged from all of them, and whether the fix is a documentation correction or a real process change.
+3. **Once decided, the owning session applies the correction** — usually the `udm-exchange` session, since it holds most of this repo's own process docs — with a changelog entry that names what was found and by whom (which entity's check surfaced it), not just what changed. This keeps the drift itself part of the record, the same way a stale cross-reference or a superseded feedback doc is kept visible rather than silently fixed.
+
+This is a discovery-and-repair pattern, not a new command verb — `STATUS` already covers step 1; nothing here changes the seven-verb vocabulary in §3.
+
 ---
 
 ## 4. Visual status indicator
@@ -117,7 +130,7 @@ A generated status board (HTML artifact, regenerated by design chat on request) 
 
 ## 5. What this doesn't change
 
-This protocol formalizes triggers and status-tracking on top of the round-trip already defined in `UDM_ROLES_AND_HANDOFF.md` v1.1.0. Ron remains the only relay point between the other three entities.
+This protocol formalizes triggers and status-tracking on top of the round-trip already defined in `UDM_ROLES_AND_HANDOFF.md` v1.2.0. Design chat's documents still route through Ron — it has no write access anywhere. The two coding sessions do not: each has scoped direct-write access to its own folders in `udm-exchange` and commits there without a Ron relay step for the commit itself (see Roles & Handoff v1.2.0 for the corrected model — this line originally said "Ron remains the only relay point between the other three entities," which was already inaccurate when written, per the same drift documented in §3.5).
 
 ---
 
