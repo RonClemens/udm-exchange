@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
 **Reports against:** PKM Migration Plan v0.3.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.6.0 (2026-07-29) — added §8, documenting this app's own Step 10: a first-slice decomposition of `Specification.sections` into `Requirement`/`ChecklistItem`/`VerificationEvent` records, per design chat's ACTION item 2 (closing the gap Steps 4 and 5 both explicitly deferred). Renumbered former §8 (optional follow-ups) to §9.
 - v1.5.0 (2026-07-29) — added §7, recording the standalone `AcquisitionMilestone` entity's actual removal (design chat ACTION item 1: the coexist-then-deprecate window from Step 9/§6 is now closed, not just verified-closeable). Renumbered former §7 (optional follow-ups) to §8. Updated `Reports against:` to PKM Migration Plan v0.3.1 / Entity Model v0.4.0 (both revved since v1.4.0 — the `ReconciliationEvent` addition; documentation-only from this app's side per the Migration Plan's own v0.3.1 note, no action taken here).
 - v1.4.0 (2026-07-29) — added §6, documenting Migration Plan Step 8 (this app's own numbering: Step 9): consolidated the standalone `AcquisitionMilestone` entity into `Milestone` via `milestoneType`, per the canonical model's v0.3.0 broadening. Answers Migration Plan §9 item 5 (coexistence-window deadline). Renumbered former §6 (optional follow-ups) to §7. Also corrected this header's stale `Reports against:` versions (was citing Migration Plan v0.2.0 / Entity Model v0.2.1, two and three revisions behind), per the Migration Plan's own §9 item 5 context and this repo's feedback-staleness convention.
 - v1.3.0 (2026-07-28) — added §5, documenting PKM Migration Step 8 (AAF Milestone A/B/C occurrence tracking) — a new `AcquisitionMilestone` entity — plus a direct answer to §5 optional-follow-up #6 from v1.2.0 (whether acquisition-phase/pathway concepts belong in the PKM model). Renumbered former §5 (optional follow-ups) to §6 and updated item #6's own text to reflect the answer.
@@ -11,7 +12,7 @@
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
-**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone) and Step 9 (its consolidation into Milestone), are implemented, verified, and deployed — and Step 8's entity has since been fully retired (§7). This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
+**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7) and Step 9 (its consolidation into Milestone), plus Step 10 (a first-slice `Specification.sections` decomposition — §8), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
 
 ---
 
@@ -193,7 +194,44 @@ default-landing, gate-status display (reading `Milestone` correctly), the All Ta
 the PDKM Promises tab still rendering AAF gate records under the unified `Milestone` group — zero
 console errors, zero regressions.
 
-## 8. Optional follow-ups (not blockers)
+## 8. Update since v1.5.0 (2026-07-29): Specification.sections decomposition (this app's Step 10, first slice)
+
+Per design chat's ACTION item 2 (2026-07-29 1615 UTC batch): "doesn't depend on any currently
+open PKM question... proceed whenever convenient, same content-authoring risk profile as Step
+5's first slice." Closes the gap Steps 4 and 5 both explicitly flagged and deferred at the time
+("the higher-effort part of this phase... a separate, later sub-phase").
+
+- **Scope:** one representative Specification (`spec-002`, the Test Set CI Development spec),
+  not a sweep across all five — same first-slice discipline Step 5 used (two milestones, one
+  COTS conversion), not a full pass.
+- **`Requirement` gained two additive, nullable fields:** `sourceSpecificationId`,
+  `sourceSpecSection` (the latter a fixed `SpecSectionKey` enum) — traces a decomposed
+  requirement back to where it came from. Both null for requirements that predate this step
+  (`req-001` through `req-004`, which came from `DeltaMatrixRow`/`CotsRecord` content instead).
+- **`functionalPerformance` → two new `Requirement` records.** `spec-002`'s two "shall"
+  statements ("shall generate and capture UUT stimulus/response signals..."; "shall format
+  diagnostic messages...") are now `req-005`/`req-006` — children of `req-001` (the system-level
+  flow-down this spec's CI-level content elaborates), satisfied by `ci-001` (the CI `spec-002`
+  is linked to).
+- **`verificationProvisions` → one new `VerificationEvent`.** This section's text names two
+  verification methods: "verified by test" (not represented anywhere) and "verified by
+  inspection of vendor data sheet" (already covered by `ve-001`, Step 5, via `CotsRecord`). Only
+  the genuinely missing half became `ve-003`, against `req-005`.
+- **`ChecklistItem` demonstrates the actual payoff.** `check-008` evidences `req-005`
+  individually (`evidenceType: "Requirement"`) — a criterion that could not have existed before
+  this step, since `req-005` didn't exist as its own record; only as free text inside a
+  Specification section with nothing to point a checklist criterion at.
+
+**Schema footprint:** two additive fields on `Requirement`, two new `Requirement` records, one
+new `VerificationEvent`, one new `ChecklistItem`. Zero fields removed, zero existing records
+changed.
+
+**Verification:** clean `tsc -b` build in both workspaces; live-server API checks confirming the
+new record counts; Playwright pass covering the guided checklist panel (Baseline A's current
+TRR milestone surfaces `check-008`), the Specifications tab, and the PDKM Promises tab
+(surfacing the two new requirement statements) — zero console errors, zero regressions.
+
+## 9. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
