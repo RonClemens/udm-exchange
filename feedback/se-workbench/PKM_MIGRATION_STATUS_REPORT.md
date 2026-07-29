@@ -1,15 +1,16 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.2.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.2.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
+**Reports against:** PKM Migration Plan v0.3.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.3.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.4.0 (2026-07-29) — added §6, documenting Migration Plan Step 8 (this app's own numbering: Step 9): consolidated the standalone `AcquisitionMilestone` entity into `Milestone` via `milestoneType`, per the canonical model's v0.3.0 broadening. Answers Migration Plan §9 item 5 (coexistence-window deadline). Renumbered former §6 (optional follow-ups) to §7. Also corrected this header's stale `Reports against:` versions (was citing Migration Plan v0.2.0 / Entity Model v0.2.1, two and three revisions behind), per the Migration Plan's own §9 item 5 context and this repo's feedback-staleness convention.
 - v1.3.0 (2026-07-28) — added §5, documenting PKM Migration Step 8 (AAF Milestone A/B/C occurrence tracking) — a new `AcquisitionMilestone` entity — plus a direct answer to §5 optional-follow-up #6 from v1.2.0 (whether acquisition-phase/pathway concepts belong in the PKM model). Renumbered former §5 (optional follow-ups) to §6 and updated item #6's own text to reflect the answer.
 - v1.2.0 (2026-07-27) — added §4, documenting the Acquisition Phase Workbench (new default guided navigation). No PKM entity/schema change beyond one additive evidence-type enum value. Renumbered former §3 (optional follow-ups) to §5 and added one new follow-up item.
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
-**Status:** All 7 steps of the migration plan are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
+**Status:** All 7 original migration steps, plus this app's own Step 8 (AcquisitionMilestone) and Step 9 (its consolidation into Milestone, i.e. Migration Plan v0.3.0's own §8), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
 
 ---
 
@@ -114,7 +115,58 @@ gate-status click-to-set on both baselines, persistence across reload, the exist
 PDKM Promises tab rendering the new entity's group without errors — zero console errors, zero regressions in
 unrelated tabs.
 
-## 6. Optional follow-ups (not blockers)
+## 6. Update since v1.3.0 (2026-07-29): Consolidated AcquisitionMilestone into Milestone (Migration Plan v0.3.0 §8; this app's own Step 9)
+
+Implements the new canonical guidance from PKM Migration Plan v0.3.0 §8, which folded the standalone
+`AcquisitionMilestone` entity (this app's own Step 8, §5 above) into the broadened `Milestone` entity — one
+entity with a `milestoneType: "SETR" | "AcquisitionGate"` discriminator, per PKM Entity Model v0.3.0/v0.3.1's own
+correction (informed directly by this app's Step 8 work). This is the first step in this plan's whole history to
+run in the opposite direction from every one before it — canonical guidance *to* this app, not a report *of* work
+this app already did independently.
+
+- **`Milestone` gained `milestoneType` and `pathway`.** `milestoneType: "SETR"` backfilled on all 16 pre-existing
+  records (the only value that ever existed); `pathway: null` likewise, since SETR records have no pathway
+  concept. Six new `Milestone` records with `milestoneType: "AcquisitionGate"` were added — a 1:1 migration of the
+  six former `AcquisitionMilestone` rows (same `event`, `pathway`, `baselineId`, `status`, `actualDate`,
+  `plannedDate`; new ids consistent with this array's own naming convention).
+- **`establishesBaselineId` semantics (PKM v0.3.1 §3):** not added as a new field — this app already models that
+  relationship in the *reverse* direction (`Baseline.establishedAtMilestoneId`, Step 2), populated only with
+  `milestoneType: "SETR"` record ids in practice. No structural change needed to preserve the type-dependent
+  semantics the canonical model describes.
+- **`deriveCurrentMilestone()` and `milestoneStatusesForPhase()` scoped explicitly to `milestoneType: "SETR"`**,
+  per the plan's own instruction — `MILESTONE_EVENTS`' SRR–PRR ordering still means nothing for
+  `AcquisitionGate` records. Behaviorally unchanged from before this consolidation.
+- **Coexist-then-deprecate, same discipline as every step so far.** The standalone `AcquisitionMilestone` type,
+  its seed data, its CRUD API route (`/api/acquisition-milestones`), and its client entity export
+  (`acquisitionMilestonesApi`) are all still present, untouched, and independently fetchable — not removed. What
+  changed is which source the UI reads: the Acquisition Phase Workbench's gate-status panel and the PDKM
+  Promises tab now read/write the consolidated `Milestone` records (`gateMilestoneFor()`, replacing the retired
+  `acquisitionMilestoneFor()`) instead of the standalone entity. This app's `App.tsx` also stopped actively
+  fetching the standalone entity, since nothing renders it anymore — the type/table/route themselves are
+  untouched, only the now-genuinely-dead client-side fetch was removed.
+- **PDKM Promises tab:** the "Schedule & Milestones" group's `Milestone` rows now include the six
+  `AcquisitionGate` records alongside the sixteen `SETR` ones (44 tagged values total, up from 32) — one
+  `rowsFor("Milestone", ...)` call surfaces both, so the separate "Acquisition Milestone" group is gone rather
+  than duplicating now-redundant data. `data-schema/DOMAIN_PLACEHOLDER_FIELDS.md` merged accordingly: one
+  `Milestone` section (noting the broadened scope), `AcquisitionMilestone`'s former section marked
+  `Superseded by: Milestone`, not deleted.
+- **Answers Migration Plan §9 item 5** (does the coexistence window need a hard deadline?): **no fixed deadline
+  needed** — "until the gate-status UI is confirmed reading from consolidated `Milestone`" is sufficient as a
+  completion criterion on its own, and that criterion is now met (verified below). No further action is expected
+  on the deprecated `AcquisitionMilestone` table from this app's side; it's inert until a future pass removes it
+  outright, whenever that's judged worthwhile.
+
+**Schema footprint:** two additive fields on `Milestone` (`milestoneType`, `pathway`), six additive records. Zero
+fields removed from `Milestone` or `AcquisitionMilestone`; zero records deleted.
+
+**Verification:** clean `tsc -b` build in both workspaces (caught two real type errors from the broadened
+`MilestoneEvent` union during implementation — `SetrEvent`-scoped `.includes()` calls needed explicit narrowing —
+both fixed with justified casts, not `any`/`as unknown`). Playwright smoke test: gate-status click-to-set on both
+baselines against the consolidated entity, persistence confirmed via a direct API read after each click, the
+PDKM Promises tab rendering 44 unified values with no separate Acquisition Milestone group, zero console errors,
+zero regressions in unrelated tabs.
+
+## 7. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
