@@ -1,10 +1,11 @@
 # Reusable SE Webapp Architecture Guidance
 
-**Version:** 1.4.0
-**Last updated:** 2026-07-27
+**Version:** 1.5.0
+**Last updated:** 2026-07-29
 **Status:** Draft
 
 **Changelog:**
+- **v1.5.0** — Added §11 (brief — `RiskItem` fields follow the existing `@domain-placeholder` convention, §10, no new mechanism) and §12, the SEMP Generation Pattern: a directory convention and generation approach for assembling a Systems Engineering Management Plan from PKM structure + PDKM content, per `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §2 (design chat, 2026-07-29). No new provider capability required — reuses the existing provider abstraction (§3) and data-injection pattern (§4) exactly as designed; these sections document the pattern, they don't introduce new mechanism. Renumbered former §11 ("Why This Matters Long-Term") to §13.
 - **v1.4.0** — Added §10, the `@domain-placeholder` convention: a field/type-level marker for program-specific illustrative content, plus a required manifest and a recommended "Promises" UI pattern. Generalized from SE Workbench's own implementation, refined through Workbench's response to the original proposal (JSDoc-comment form, whole-type and shared-subtype tagging patterns, mock-data scope settled as out-of-scope). Renumbered former §10 ("Why This Matters Long-Term") to §11. Added a §7 migration-checklist line for retroactive tagging.
 - **v1.3.0** — Added §10 (now §11), forward-compatibility conventions for an eventual Unified Data Model (UDM) spanning multiple apps. Non-blocking; sets conventions only.
 - **v1.2.0** — Clarified §4: `config.json` doesn't have to own every setting (e.g., provider selection can stay on existing env vars); it exists to give settings without an existing home, like `dataSource`, a documented place to live. Prompted by SE Workbench implementation review of v1.1.0.
@@ -314,6 +315,59 @@ Retroactively tagging an existing app's fields is additive and comment-only — 
 
 ---
 
-## 11. Why This Matters Long-Term
+## 11. Risk, Issue, and Opportunity Tracking
+
+`RiskItem` (PKM v0.6.0) follows the same data-injection pattern every other entity already uses (§4) — no new mechanism, just noting it explicitly since risk content has a genuine PDKM-sensitivity worth calling out. Risk statements, root-cause narratives, and mitigation rationale are program-specific content (real cost/schedule impact, real technical concerns) — apply the `@domain-placeholder` convention (§10) to these fields the same way any other illustrative content gets tagged. `itemType`, `category`, `mitigationStrategy`, and `riskLevel` (derived) are structural — not tagged, same test as any other field (§10.1).
+
+---
+
+## 12. SEMP Generation Pattern
+
+An automated Systems Engineering Management Plan (SEMP) generation capability is under design (`proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md`), building directly on §9's PKM/PDKM split and §10's `@domain-placeholder` convention. This section documents the pattern once it's ready for apps to build against — **it introduces no new provider capability or data-injection mechanism**; it's a specific *consumer* of both, assembled the same way any other AI-assisted feature in this architecture already works.
+
+### 12.1 Three inputs, one generated output
+
+```
+SEMP Template (methodology layer, public-safe)
+        +
+PKM instance data (structure — per-baseline/per-project, already exists)
+        +
+PDKM instance data (real program content — per-program, CUI)
+        ↓
+   Generated SEMP (program-specific output — never committed publicly)
+```
+
+The generated document itself is data-layer output by definition — same rule as any other real program data (§1, §4): it's generated at runtime from real content, and it never gets committed to any public repo, including this one.
+
+### 12.2 Directory convention addition
+
+```
+/methodology/
+  semp-template/          # new — section-by-section mapping + generation prompts
+    section-mapping.md     # which PKM entities/PDKM fields feed each SEMP section
+    prompts/                 # narrative-section prompts, same discipline as §5
+```
+
+`semp-template/` sits alongside the existing `/methodology/prompts` and `/methodology/checklists` — same versioning, same public-safe/CUI-vendoring treatment as everything else in `/methodology` (§6, §8).
+
+### 12.3 Generation approach — two kinds of sections, two mechanisms
+
+**Structured sections** (schedule tables, deliverable lists, RACI-style role/action tables) are assembled directly from PKM+PDKM data via query-and-format — no AI call, same risk profile and same code path as any other read-only view already in an app. Example: a schedule table is a direct query over `Milestone` records, formatted per the template's mapping — nothing about this requires the provider abstraction at all.
+
+**Narrative sections** (SE process description, objectives/constraints prose) go through the existing provider abstraction (§3) via `complete()` or `completeStructured()` — the same interface every other AI-assisted feature in an app already calls. No new provider method, no new adapter requirement.
+
+**Content-boundary test applies at the section level**, same test as everywhere else in this document (§1): is a section's *assembly logic* (which fields to pull, how to lay out the table, which prompt template to use) the same regardless of program? If yes, methodology layer, public-safe, belongs in `semp-template/`. Is the *generated output itself* real program content? Always yes, by definition (§12.1) — so it's data-layer, never public.
+
+### 12.4 What this deliberately doesn't require
+
+- No new entity type solely for SEMP generation — it's a consumer of `Milestone`, `Deliverable`, `Requirement`, `Role`, `RiskItem`, and whatever PKM already models, not a reason to add structure.
+- No change to the provider interface (§3) — `complete()`/`completeStructured()` already cover narrative generation.
+- No change to the data-injection pattern (§4) — PDKM content loads exactly the way any other program data already does.
+
+If a real implementation surfaces a need for any of the above, that's a gap to route back through the normal Documentation Drift / conformance-feedback path (per `UDM_WORKFLOW_PROTOCOL.md` §3.5), not something to build ad hoc inside a single app's SEMP feature.
+
+---
+
+## 13. Why This Matters Long-Term
 
 Right now each app (PDR readiness, Dispatch, translator) independently reinvents: an AI provider call, a prompt, a data shape, a UI. Once `/methodology` + `/provider` are standardized, a new tool for a new program becomes: define a data schema, write a few checklist/prompt files, reuse everything else. That's the actual scaling unlock — not just CUI-compliance, but turning one-off tools into a genuine internal SE toolkit product line.
