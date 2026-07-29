@@ -26,7 +26,7 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 | Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | **Merged** into Workflow Protocol v1.3.0 §6 — `RESOLVED` |
 | Source/Target/Batch Structure for Commands | `UDM_WORKFLOW_PROTOCOL.md` §3.2/§3.3 | **Merged** into Workflow Protocol v1.6.0 — `RESOLVED` |
 | Raw URL Required on Cross-Document References | `UDM_WORKFLOW_PROTOCOL.md` §3.4 | **Merged** into Workflow Protocol v1.8.0 — `RESOLVED` (no explicit `CLOSE` issued; marked resolved since §3.4's content fulfills it — flagged in case that's not yet intended) |
-| UDM v2.0 — Automated SEMP Generation Architecture (`proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` v0.3.0) | Architecture Guidance (proposed new §12), PKM (`RiskItem` entity still proposed; `Role` now shipped separately — see Current versions) | **Draft** — `Role` (item 2) and the `RiskItem`/`Gap` boundary (item 3) resolved and decoupled; 4 of 7 §6 items remain open (24748-4 access, RMB, SEMP audit trail, `RiskItem` implementation itself). Remainder not yet actionable. |
+| UDM v2.0 — Automated SEMP Generation Architecture (`proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` v0.4.0) | Architecture Guidance §11–§12 (both now shipped, see Current versions), PKM `Role`/`RiskItem` (both now shipped) | **Draft** — only §6 item 1 (ISO/IEC/IEEE 24748-4:2026 access) remains genuinely blocking; items 4 (RMB) and 5 (SEMP audit trail) open but non-blocking. Phase C (schedule-table prototype) approved to relay to Workbench. |
 
 ## Open item
 

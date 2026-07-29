@@ -1,11 +1,12 @@
 # UDM v2.0 — Automated SEMP Generation Architecture (Planning Proposal)
 
-**Version:** 0.3.0 (Exploratory / Proposal — Role approved to proceed; three of six §6 items resolved)
+**Version:** 0.4.0 (Exploratory / Proposal — Role and RiskItem both real; Architecture Guidance §11–§12 drafted; only 24748-4 access remains genuinely blocking)
 **Last updated:** 2026-07-29
 **Status:** Draft
-**Depends on:** PKM Entity Model v0.5.0, Architecture Guidance v1.4.0, SE Workbench Migration Plan v0.4.0
+**Depends on:** PKM Entity Model v0.6.0, Architecture Guidance v1.5.0, SE Workbench Migration Plan v0.5.0
 
 **Changelog:**
+- **v0.4.0** — Everything but 24748-4 access moved forward in one pass (Ron, 2026-07-29): `RiskItem` implemented as PKM v0.6.0 (§3.1's design shipped, not just proposed — see PKM Migration Plan v0.5.0 Step 10 for Workbench guidance). Architecture Guidance v1.5.0 §11–§12 drafted (SEMP Generation Pattern + brief RiskItem tagging note) — §2 below is now historical record of what was proposed, matching what shipped. §4's Phase B (Role) already complete; Phase C (schedule-table prototype) approved to relay to Workbench as real guidance, no longer held behind "wait for full proposal review." Phase A remains genuinely blocked on 24748-4 access — the one item explicitly deferred, not resolved.
 - **v0.3.0** — Ron's answers to §6 items 2–5: (2) `Role` **approved to proceed now**, decoupled from this proposal's broader decision — implemented as PKM v0.5.0's `Role` entity and Migration Plan v0.4.0's Step 9, not just sketched here anymore. (3) `RiskItem`/`Gap` boundary — **agreed as proposed** (the `escalatedToRiskItemId` bridge). (4) Risk Management Board — **no PKM entity, for now** — explicitly parked pending a separate risk-planning session, not fully closed. (5) Generated SEMP audit trail — **not yet**, left open. §3's Role sketch updated to reflect the entity is now real, not tentative; §3.1 updated to reflect items 3–4's resolution; §6 renumbered accordingly.
 - **v0.2.1** — Fixed a formatting defect from v0.2.0's edit: the "## 4. Phased migration plan" section header was accidentally deleted when §3.1 was inserted, leaving the Phase A–F table floating under §3.1 with no heading. Content of the table itself was never affected — this is a heading-only fix. Also corrected §1's stale in-prose reference to "PKM v0.3.1" (the table header already said v0.4.0 correctly; the sentence above it hadn't been updated to match).
 - **v0.2.0** — Added §3.1, Risk Management, closing the gap Ron flagged in review: this proposal's original §1 mapping table had no home for risk at all. Grounded in the DoD RIO Management Guide (Dec 2023, now in Project Knowledge) and INCOSE SE Handbook §2.3.4.4/2.3.4.5. Proposes a unified `RiskItem` entity (Risk/Issue/Opportunity, one entity with a type discriminator — mirroring the Milestone `SETR`/`AcquisitionGate` pattern already established, and directly following the RIO Guide's own suggestion that programs may combine all three registers into one). Identifies PRMP as already PKM-conformant via the existing `Deliverable` entity — no new entity needed for the plan document itself. Flags the `Gap`/`RiskItem` boundary as a real open design question, not presumed here.
@@ -35,7 +36,7 @@ PDKM instance data (real program content — per-program, CUI)
    Generated SEMP (program-specific output — never committed publicly)
 ```
 
-This isn't a new modeling problem so much as a **document-assembly problem layered on top of what already exists.** Looking at the current PKM v0.5.0 entity table against the Handbook's 11-item outline, most sections already have a structural home:
+This isn't a new modeling problem so much as a **document-assembly problem layered on top of what already exists.** Looking at the current PKM v0.6.0 entity table against the Handbook's 11-item outline, most sections already have a structural home:
 
 | SEMP section (Handbook summary) | Existing PKM source |
 |---|---|
@@ -53,13 +54,15 @@ This isn't a new modeling problem so much as a **document-assembly problem layer
 | Organization / SE interfaces with rest of org | No PKM home at all — likely inherently PDKM content (program org charts are about as program-specific as content gets), but PKM should at minimum define *where* that content type is referenced from |
 | Technical objectives, assumptions, constraints | Same question — likely PDKM content, not PKM structure, per the content-boundary test; PKM's job may just be a stable reference point, not a decomposed entity |
 | Infrastructure/resource management | No current PKM entity; unclear yet whether this needs one or is pure PDKM narrative |
-| **Risk management** *(was entirely missing from this table in v0.1.0 — Ron flagged it)* | **Scoped in §3.1 below.** No PKM entity for risk/issue/opportunity tracking exists yet; the plan document itself (PRMP) turns out to already be PKM-conformant with no new structure needed |
+| **Risk management** *(was entirely missing from this table in v0.1.0 — Ron flagged it)* | **Resolved — `RiskItem` is now a first-class PKM entity** (v0.6.0 §2–§3), implemented via Migration Plan v0.5.0 Step 10. No longer a gap. |
 
 This table is the actual scope of "what's new" — it's smaller than a full v2.0 might suggest at first. Worth stating plainly: **most of the hard modeling work already happened, across Steps 1–8.** This proposal is mostly about *assembly*, not new structure.
 
 ---
 
-## 2. Proposed Architecture Guidance addition — §12, SEMP Generation Pattern
+## 2. Architecture Guidance §12, SEMP Generation Pattern — DRAFTED, matches this proposal
+
+**This section is now historical record.** Architecture Guidance v1.5.0 §12 was drafted matching what's proposed below almost exactly — where this reads as "a new section for Architecture Guidance," treat it as "what's now live in §12."
 
 A new section for Architecture Guidance, following the same methodology/data separation discipline as everything else in that document:
 
@@ -84,7 +87,9 @@ This lets the SEMP's "responsibilities and authority" section generate directly 
 
 ---
 
-## 3.1 Proposed PKM extension — Risk Management (`RiskItem`), grounded in the DoD RIO Guide
+## 3.1 Risk Management (`RiskItem`) — IMPLEMENTED, no longer a proposal
+
+**This section is now historical.** `RiskItem` shipped as PKM v0.6.0 (§2–§3) — everything sketched below matches what was implemented; where the text below reads as "proposed," treat it as "implemented as described" instead. See PKM Migration Plan v0.5.0 Step 10 for the guidance now relayed to Workbench.
 
 Ron flagged this directly: risk management was entirely absent from v0.1.0's scope, despite most SEMP outlines treating it as core content (JSSSEH's DoD-flavored three-part SEMP structure names "program risk analysis" explicitly; the RIO Guide itself notes a Program Risk Management Plan — PRMP — typically coordinates with the SEMP/technical strategy). This section closes that gap, grounded in the DoD Risk, Issue, and Opportunity (RIO) Management Guide for Defense Acquisition Programs (Dec 2023) and INCOSE SE Handbook §2.3.4.4–2.3.4.5.
 
@@ -129,36 +134,36 @@ Risk statement/description (RIO recommends an If-Then format), root cause narrat
 
 ## 4. Phased migration plan (draft — risk-sequenced, same discipline as every prior migration plan)
 
-| Phase | What | Risk | Depends on |
+| Phase | What | Risk | Status |
 |---|---|---|---|
-| **A** | Formalize the SEMP Template — section-by-section mapping table (§1), documentation only | Low | ISO/IEC/IEEE 24748-4:2026 access (§0 gap) |
-| **B** | Resolve `Role` entity question (§3) — extend PKM only if Workbench's answer confirms the need | Low-moderate | Workbench's response (already requested) |
-| **C** | Prototype: generate the **schedule/milestone table only** — pure structured assembly from existing `Milestone` records, zero new PDKM tailoring needed, zero AI calls | Low | Phase A |
-| **D** | Extend structured generation to deliverables, RACI (once Role exists), technical scope (CI/Requirement tree) | Moderate | Phase B, C |
-| **E** | Narrative sections via AI-assisted drafting from PDKM content (objectives, constraints, SE process description) | High — genuine content generation, not mechanical assembly | Phase D |
-| **F** | Full-document assembly + validation pass — does it read coherently, does a real reviewer accept it as a usable SEMP draft | High (judgment, not technical) | Phase E |
+| **A** | Formalize the SEMP Template — section-by-section mapping table (§1), documentation only | Low | **Blocked** — genuinely needs ISO/IEC/IEEE 24748-4:2026 (§0), deferred by Ron to tomorrow. The only phase still gated. |
+| **B** | `Role` entity | Low-moderate | **Complete** — PKM v0.5.0, Migration Plan Step 9, implemented and verified by Workbench (v1.7.0). |
+| **C** | Prototype: generate the **schedule/milestone table only** — pure structured assembly from existing `Milestone` records, zero new PDKM tailoring needed, zero AI calls | Low | **Approved to relay** — doesn't depend on Phase A's exact template mapping (schedule/milestone content isn't where 24748-4's clause-level detail matters); ready for real Workbench guidance now. |
+| **D** | Extend structured generation to deliverables, RACI (`Role`/`RiskItem` both now exist), technical scope (CI/Requirement tree) | Moderate | Ready once Phase C proves the pattern — not yet relayed, but no longer blocked on anything other than sequencing. |
+| **E** | Narrative sections via AI-assisted drafting from PDKM content (objectives, constraints, SE process description) | High — genuine content generation, not mechanical assembly | Blocked on Phase A (needs the real section list from 24748-4 before drafting narrative-section prompts). |
+| **F** | Full-document assembly + validation pass — does it read coherently, does a real reviewer accept it as a usable SEMP draft | High (judgment, not technical) | Blocked on Phase E. |
 
 This follows the same "mechanical/additive first, judgment-heavy last" sequencing Architecture Guidance §7 and every migration plan so far has used — Phase C in particular is deliberately chosen as the very first prototype because it requires **zero new PDKM content and zero AI calls**, just proves the assembly pattern works end-to-end on data that already exists.
 
 ---
 
-## 5. Who does what (once this is ready to send — not yet)
+## 5. Who does what — status update
 
-- **udm-exchange:** would own committing Architecture Guidance §12, any resulting PKM `Role` extension, and a new `semp-generation/` migration-plan document — likely its own top-level folder in the repo, same precedent as `pkm/examples/` just established.
-- **SE Workbench:** the natural first prototype target — richest existing PKM dataset (all 7 base steps + Step 8 in progress). Phase C is low-risk enough to hand them directly once Phase A's template mapping exists.
-
----
-
-## 6. Open items — none of this should be relayed until these are addressed
-
-1. **ISO/IEC/IEEE 24748-4:2026 access** (§0) — needed before the template mapping in Phase A can be finalized against the actual standard rather than secondary summaries. *(Ron is independently sourcing this.)*
-2. ~~`Role` entity decision~~ **Resolved — approved to proceed** (§3). Implemented as PKM v0.5.0, Migration Plan v0.4.0 Step 9. No longer blocking anything downstream that depends on it.
-3. ~~`RiskItem` vs. `Gap` boundary~~ **Resolved — agreed as proposed** (§3.1). `Gap.escalatedToRiskItemId` bridge confirmed. Not yet implemented (that's still gated on `RiskItem` itself, item 5 below), but the design question is settled.
-4. **Risk Management Board — parked, not resolved.** (§3.1) "No PKM entity, for now" — explicitly provisional pending a separate risk-planning session Ron intends to hold. Don't treat as final architecture.
-5. **Whether generated SEMP output itself needs any PKM-level audit trail** — **not yet**, per Ron. Left open, not decided either way.
-6. **`RiskItem` itself — not yet implemented.** Items 3 and 4 resolved the *design* of RiskItem's boundaries, but the entity hasn't been proposed as an actual PKM revision the way `Role` just was. That's still bundled with this document's broader SEMP-generation decision, not decoupled the way Role was.
-7. **Not yet drafted:** the actual migration-plan document (beyond Step 9, already split out) and any coaching commands to either coding chat for the rest of this proposal. Next step is Ron's continued review of items 1, 4, 5, and 6 — then (if it holds up) turning §4 into a real versioned migration plan and §2 into an actual Architecture Guidance §12 draft.
+- **udm-exchange:** has already committed Architecture Guidance §11–§12, PKM `Role` (v0.5.0) and `RiskItem` (v0.6.0), and Migration Plan Steps 9–10. What's not yet committed: Phase A's actual template-mapping document (blocked on 24748-4) and Phase C's coaching command to Workbench — see accompanying relay.
+- **SE Workbench:** already the proven implementation partner for Role and RiskItem alike, both verified end-to-end. Phase C (schedule-table prototype) is next — approved to relay now, doesn't need Phase A's exact mapping to start.
 
 ---
 
-*This document is a planning proposal. Role (item 2) has been decoupled and is proceeding independently — see PKM v0.5.0 and Migration Plan v0.4.0. Everything else here remains un-relayed until Ron has reviewed the remaining open items.*
+## 6. Open items — status as of 2026-07-29 end of day
+
+1. **ISO/IEC/IEEE 24748-4:2026 access** (§0) — the only genuinely blocking item remaining. Needed before Phase A's template mapping and Phase E's narrative prompts can be finalized against the actual standard rather than secondary summaries. Ron deferred sourcing this to tomorrow (2026-07-30) — everything else in this document moved forward without waiting on it.
+2. ~~`Role` entity decision~~ **Resolved and shipped.** PKM v0.5.0, Migration Plan v0.4.0 Step 9, implemented and verified by Workbench (status report v1.7.0).
+3. ~~`RiskItem` vs. `Gap` boundary~~ **Resolved and shipped.** `Gap.escalatedToRiskItemId` bridge implemented in PKM v0.6.0, exactly as agreed.
+4. **Risk Management Board — still parked, not resolved.** (§3.1) "No PKM entity, for now" — explicitly provisional pending a separate risk-planning session Ron intends to hold. Not addressed by this round; don't treat as final architecture.
+5. **Whether generated SEMP output itself needs any PKM-level audit trail — still not yet.** Left open, not decided either way. Not addressed by this round.
+6. ~~`RiskItem` itself — not yet implemented~~ **Resolved and shipped.** PKM v0.6.0, Migration Plan v0.5.0 Step 10, relayed to Workbench as real guidance (not a proposal).
+7. **Migration plan and coaching commands — partially drafted.** Steps 9 (Role) and 10 (RiskItem) both exist as real Migration Plan entries, already relayed. Architecture Guidance §11–§12 both drafted and live. What's *not* yet drafted: Phase A's actual template-mapping document (blocked on item 1) and Phase E/F's narrative-generation guidance (also blocked on item 1, since prompt design needs the real section list). Phase C (schedule-table prototype) is approved to relay to Workbench now — see accompanying command.
+
+---
+
+*Only item 1 (24748-4 access) is genuinely blocking anything further in this document. Items 4 and 5 are open but not blocking — they're scoped to future work (a dedicated risk session, and audit-trail design) that doesn't gate what's already shipped. Role and RiskItem are both live; Phase C is cleared to relay.*
