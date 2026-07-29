@@ -1,16 +1,17 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.4.0
+**Version:** 1.5.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.3.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.3.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
+**Reports against:** PKM Migration Plan v0.3.1 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.5.0 (2026-07-29) — added §7, recording the standalone `AcquisitionMilestone` entity's actual removal (design chat ACTION item 1: the coexist-then-deprecate window from Step 9/§6 is now closed, not just verified-closeable). Renumbered former §7 (optional follow-ups) to §8. Updated `Reports against:` to PKM Migration Plan v0.3.1 / Entity Model v0.4.0 (both revved since v1.4.0 — the `ReconciliationEvent` addition; documentation-only from this app's side per the Migration Plan's own v0.3.1 note, no action taken here).
 - v1.4.0 (2026-07-29) — added §6, documenting Migration Plan Step 8 (this app's own numbering: Step 9): consolidated the standalone `AcquisitionMilestone` entity into `Milestone` via `milestoneType`, per the canonical model's v0.3.0 broadening. Answers Migration Plan §9 item 5 (coexistence-window deadline). Renumbered former §6 (optional follow-ups) to §7. Also corrected this header's stale `Reports against:` versions (was citing Migration Plan v0.2.0 / Entity Model v0.2.1, two and three revisions behind), per the Migration Plan's own §9 item 5 context and this repo's feedback-staleness convention.
 - v1.3.0 (2026-07-28) — added §5, documenting PKM Migration Step 8 (AAF Milestone A/B/C occurrence tracking) — a new `AcquisitionMilestone` entity — plus a direct answer to §5 optional-follow-up #6 from v1.2.0 (whether acquisition-phase/pathway concepts belong in the PKM model). Renumbered former §5 (optional follow-ups) to §6 and updated item #6's own text to reflect the answer.
 - v1.2.0 (2026-07-27) — added §4, documenting the Acquisition Phase Workbench (new default guided navigation). No PKM entity/schema change beyond one additive evidence-type enum value. Renumbered former §3 (optional follow-ups) to §5 and added one new follow-up item.
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
-**Status:** All 7 original migration steps, plus this app's own Step 8 (AcquisitionMilestone) and Step 9 (its consolidation into Milestone, i.e. Migration Plan v0.3.0's own §8), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
+**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone) and Step 9 (its consolidation into Milestone), are implemented, verified, and deployed — and Step 8's entity has since been fully retired (§7). This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
 
 ---
 
@@ -166,7 +167,33 @@ baselines against the consolidated entity, persistence confirmed via a direct AP
 PDKM Promises tab rendering 44 unified values with no separate Acquisition Milestone group, zero console errors,
 zero regressions in unrelated tabs.
 
-## 7. Optional follow-ups (not blockers)
+## 7. Update since v1.4.0 (2026-07-29): AcquisitionMilestone retired
+
+Per design chat's ACTION item 1 (2026-07-29 1615 UTC batch): "coexist-then-deprecate is complete,
+this is the actual deprecation step." Confirmed nothing referenced the standalone entity before
+removing it — App.tsx, the Phase Workbench gate display, and the PDKM Promises tab all already
+read the consolidated `Milestone` entity as of Step 9 (§6) — then removed outright:
+
+- The `AcquisitionMilestone` type, `AcquisitionMilestoneEvent` union, and `ACQUISITION_MILESTONE_EVENTS`
+  const (both type-mirror files).
+- The `acquisitionMilestones` field on `Database` (both type-mirror files).
+- Seed data: the `acquisitionMilestones` array (`mock-data/seed.ts` and `mock-data/seed.json`).
+- The CRUD API route (`/api/acquisition-milestones`) and its `REQUIRED_KEYS` entry.
+- The client entity export (`acquisitionMilestonesApi`) and its `localStorage`-mode wiring
+  (static/GitHub-Pages deploy path).
+- `data-schema/DOMAIN_PLACEHOLDER_FIELDS.md`'s now-empty `AcquisitionMilestone` section, folded
+  into `Milestone`'s.
+
+Nothing about `Milestone` itself changed in this pass — this is pure removal of what Step 9 had
+already superseded, not a further schema change.
+
+**Verification:** clean `tsc -b` build in both workspaces; a live-server check confirming
+`GET /api/acquisition-milestones` now returns `404`; Playwright smoke test covering
+default-landing, gate-status display (reading `Milestone` correctly), the All Tabs toggle, and
+the PDKM Promises tab still rendering AAF gate records under the unified `Milestone` group — zero
+console errors, zero regressions.
+
+## 8. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
