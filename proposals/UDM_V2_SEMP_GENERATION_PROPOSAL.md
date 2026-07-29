@@ -1,11 +1,12 @@
 # UDM v2.0 — Automated SEMP Generation Architecture (Planning Proposal)
 
-**Version:** 0.2.1 (Exploratory / Proposal — not yet reviewed by Ron, not yet relayed to either coding chat)
+**Version:** 0.3.0 (Exploratory / Proposal — Role approved to proceed; three of six §6 items resolved)
 **Last updated:** 2026-07-29
 **Status:** Draft
-**Depends on:** PKM Entity Model v0.4.0, Architecture Guidance v1.4.0, SE Workbench Migration Plan v0.3.1
+**Depends on:** PKM Entity Model v0.5.0, Architecture Guidance v1.4.0, SE Workbench Migration Plan v0.4.0
 
 **Changelog:**
+- **v0.3.0** — Ron's answers to §6 items 2–5: (2) `Role` **approved to proceed now**, decoupled from this proposal's broader decision — implemented as PKM v0.5.0's `Role` entity and Migration Plan v0.4.0's Step 9, not just sketched here anymore. (3) `RiskItem`/`Gap` boundary — **agreed as proposed** (the `escalatedToRiskItemId` bridge). (4) Risk Management Board — **no PKM entity, for now** — explicitly parked pending a separate risk-planning session, not fully closed. (5) Generated SEMP audit trail — **not yet**, left open. §3's Role sketch updated to reflect the entity is now real, not tentative; §3.1 updated to reflect items 3–4's resolution; §6 renumbered accordingly.
 - **v0.2.1** — Fixed a formatting defect from v0.2.0's edit: the "## 4. Phased migration plan" section header was accidentally deleted when §3.1 was inserted, leaving the Phase A–F table floating under §3.1 with no heading. Content of the table itself was never affected — this is a heading-only fix. Also corrected §1's stale in-prose reference to "PKM v0.3.1" (the table header already said v0.4.0 correctly; the sentence above it hadn't been updated to match).
 - **v0.2.0** — Added §3.1, Risk Management, closing the gap Ron flagged in review: this proposal's original §1 mapping table had no home for risk at all. Grounded in the DoD RIO Management Guide (Dec 2023, now in Project Knowledge) and INCOSE SE Handbook §2.3.4.4/2.3.4.5. Proposes a unified `RiskItem` entity (Risk/Issue/Opportunity, one entity with a type discriminator — mirroring the Milestone `SETR`/`AcquisitionGate` pattern already established, and directly following the RIO Guide's own suggestion that programs may combine all three registers into one). Identifies PRMP as already PKM-conformant via the existing `Deliverable` entity — no new entity needed for the plan document itself. Flags the `Gap`/`RiskItem` boundary as a real open design question, not presumed here.
 - **v0.1.0** — Initial planning pass, scoping what a v2.0 architecture update for automated SEMP generation would actually require, before any migration plan or implementation coaching goes out.
@@ -34,7 +35,7 @@ PDKM instance data (real program content — per-program, CUI)
    Generated SEMP (program-specific output — never committed publicly)
 ```
 
-This isn't a new modeling problem so much as a **document-assembly problem layered on top of what already exists.** Looking at the current PKM v0.4.0 entity table against the Handbook's 11-item outline, most sections already have a structural home:
+This isn't a new modeling problem so much as a **document-assembly problem layered on top of what already exists.** Looking at the current PKM v0.5.0 entity table against the Handbook's 11-item outline, most sections already have a structural home:
 
 | SEMP section (Handbook summary) | Existing PKM source |
 |---|---|
@@ -48,7 +49,7 @@ This isn't a new modeling problem so much as a **document-assembly problem layer
 
 | SEMP section | Gap |
 |---|---|
-| Responsibilities and authority of key engineering roles | `Role` is currently just a constrained string on `ActionItem`/`Recommendation.owner` (Migration Plan §9 item 3, already in flight with Workbench) — not a queryable, describable entity with authority/responsibility content of its own |
+| Responsibilities and authority of key engineering roles | **Resolved — `Role` is now a first-class PKM entity** (v0.5.0 §2–§3), approved and proceeding as Migration Plan v0.4.0 Step 9. No longer a gap. |
 | Organization / SE interfaces with rest of org | No PKM home at all — likely inherently PDKM content (program org charts are about as program-specific as content gets), but PKM should at minimum define *where* that content type is referenced from |
 | Technical objectives, assumptions, constraints | Same question — likely PDKM content, not PKM structure, per the content-boundary test; PKM's job may just be a stable reference point, not a decomposed entity |
 | Infrastructure/resource management | No current PKM entity; unclear yet whether this needs one or is pure PDKM narrative |
@@ -69,19 +70,17 @@ A new section for Architecture Guidance, following the same methodology/data sep
 
 ---
 
-## 3. Proposed PKM extension — `Role` as a first-class entity (tentative, tied to an open item already in motion)
+## 3. `Role` as a first-class entity — RESOLVED, no longer a proposal
 
-This directly extends Migration Plan §9 item 3, which is already with Workbench for input (per Ron's direction: role taxonomy should be general-default-but-tailorable per program). If Workbench confirms their taxonomy needs to become program-configurable rather than a fixed enum, that's effectively the same structural change a `Role` entity would provide — worth resolving as one decision, not two:
+**This section is now historical.** What was sketched here as tentative is real: `Role` is implemented in PKM v0.5.0 (§2–§3) and approved to proceed as Migration Plan v0.4.0's Step 9, decoupled from the rest of this document's still-open items.
 
-**Sketch, not yet proposed as a PKM revision:**
+The sketch below matches what shipped almost exactly — the one refinement made during formalization was scoping `Role` to Project only (not "Project or Program," which the original sketch left ambiguous) and adding an `isDefault` flag so an app can seed a standard taxonomy while still allowing per-program additions, per Ron's explicit tailorability requirement:
 
 | Entity | Represents | Key relationships |
 |---|---|---|
-| **Role** | A named responsibility/authority position within a program's SE organization | belongs to Project (default catalog) or Program; `name`, `authorityDescription`; referenced by `ActionItem.assignedRoleId` in place of a plain string |
+| **Role** | A named responsibility/authority position within a program's SE organization | belongs to Project; `name`, `authorityDescription`, `isDefault`; referenced by `ActionItem.assignedRoleId` |
 
-This would let the SEMP's "responsibilities and authority" section generate directly from real `Role` records instead of a hardcoded list — and gives Ron's tailorability requirement (add/remove roles per program) a real structural home instead of an app-side enum each app manages independently.
-
-**Not finalizing this here.** It's included so Workbench's answer to the role-taxonomy question (already asked) can be evaluated against this concrete shape rather than in the abstract.
+This lets the SEMP's "responsibilities and authority" section generate directly from real `Role` records — see §1's gap table, now marked resolved. `RiskItem.ownerRoleId` (§3.1 below) is a second, independent consumer of the same entity, which reinforced rather than duplicated this decision.
 
 ---
 
@@ -103,27 +102,28 @@ The RIO Guide treats Risk, Issue, and Opportunity as running the same five-step 
 | `consequenceCost`, `consequenceSchedule`, `consequencePerformance` | Ordinal 1–5 each, RIO's three-dimension consequence scoring (Table 2-1) — the risk level uses the *maximum* of these three, not an average. |
 | `riskLevel` | Derived (`Low`/`Moderate`/`High`), not stored independently — computed from `likelihood` × max(consequence scores) via the standard risk-matrix mapping (RIO Figure 2-5, INCOSE Figure 2.28's generic I–V scale). Same derived-not-stored pattern already used for Acquisition Phase and Baseline reconciliation status. |
 | `mitigationStrategy` | `"Accept"` \| `"Avoid"` \| `"Transfer"` \| `"Control"` — RIO's four standard options (§2.4), same four terms apply to issues per RIO's explicit cross-reference. |
-| `ownerRoleId` | References the same `Role` entity sketched in §3 above — RIO requires an owner ("RMB assigns an owner for each approved issue/risk"). **This is the second real use case for `Role`, beyond SEMP's own "responsibilities" section** — worth weighing together with the Migration Plan §9 item 3 decision, not separately. |
+| `ownerRoleId` | References the `Role` entity (now implemented, PKM v0.5.0 §2 — see §3 above) — RIO requires an owner ("RMB assigns an owner for each approved issue/risk"). This was the second real use case for `Role`, alongside SEMP's own "responsibilities" section — both are now served by the same resolved entity. |
 | `linkedMilestoneId`, `linkedCiId` | Optional references — RIO's register includes a "Linked WBS/IMS ID#" column; PKM already has `Milestone` and `CI` as the natural WBS/schedule anchors, no new structure needed for this linkage. |
 | `identifiedDate`, `approvalDate`, `plannedClosureDate`, `actualClosureDate` | RIO register fields, same shape as `Milestone`'s actual/planned date pattern already established. |
 | `status` | Program-defined open/closed/monitoring states — left as a plain string for now, same provisional treatment PKM already gives `ChecklistItem.domain` (§5 open question #2) rather than presuming a fixed enum ahead of real usage. |
 
 **Mitigation ties to the existing `ActionItem` entity, not new structure.** RIO's mitigation implementation plan (what, when, who, cost/schedule/performance impact, resources) is the same shape as `ActionItem`'s remediation-task role. Proposed: `ActionItem.resolvesRiskItemId`, coexisting with the existing `resolvesGapId` — a risk's mitigation plan is an ActionItem the same way a Gap's remediation is.
 
-### The real open question: `RiskItem` vs. `Gap` — not resolved here
+### `RiskItem` vs. `Gap` — RESOLVED, agreed as proposed
 
-These are related but not obviously the same thing, and this proposal deliberately doesn't collapse them:
+Ron confirmed: distinct entities, bridged rather than merged, as originally proposed:
 
 - `Gap` is scoped to SE/CM conformance — "a finding — missing, inconsistent, or non-compliant item" — and is always already-certain (something *was* found).
 - `RiskItem` (as an Issue) is also already-certain, but its scope is broader — any program-level cost/schedule/performance problem, including ones with zero SE/CM conformance dimension (RIO's own example: a supply-chain-driven schedule slip).
+- **`Gap.escalatedToRiskItemId`** (optional) is the confirmed bridge — a Gap with real program-level cost/schedule/performance consequence beyond its immediate SE/CM finding can escalate into a formal `RiskItem` (typically `itemType: "Issue"`), without merging the two entities or diluting Gap's narrow, precise meaning.
 
-A `Gap` that has real program-level cost/schedule/performance consequence beyond its immediate SE/CM finding looks like it should be able to *escalate* into a formal `RiskItem` (typically `itemType: "Issue"`) — proposed as an optional `Gap.escalatedToRiskItemId` reference, not a merge of the two entities. This keeps Gap's narrow, precise SE/CM-conformance meaning intact while giving it a bridge into program-level risk tracking when that's actually warranted. **Flagging this as the real design decision in this section — not presuming it's the right answer, just the most defensible one found so far.**
+This is now settled design direction, not an open question — ready to fold into a real PKM revision whenever `RiskItem` itself moves from proposal to implementation (still gated, see §6).
 
 ### What stays PDKM (real content, never PKM structure)
 
 Risk statement/description (RIO recommends an If-Then format), root cause narrative, mitigation strategy rationale, consequence justification, and any historical trend/burn-down data points are all real per-program content — same treatment as `Requirement.statement` or `Gap.description` already receive. Nothing about this proposal suggests decomposing narrative risk content into PKM structure.
 
-**Not yet resolved, flagged rather than decided:** whether a Risk Management Board (RMB) — RIO's governance body that approves risks/issues and assigns owners — needs any PKM representation at all, or stays pure PDKM/methodology content (a meeting cadence + membership list, similar to how `Program`/`Project` don't model organizational governance structures today). Leaning toward "no PKM entity needed," but not committing to that without more evidence than one source document provides.
+**Risk Management Board (RMB) — parked, not fully closed.** Ron's direction: no PKM entity for now, but this is explicitly provisional pending a separate, dedicated risk-planning session — not a considered "no" the way the Role and Gap/RiskItem questions above are. Treat this as unresolved-but-not-blocking rather than settled; revisit once that session happens rather than treating "no entity" as final architecture.
 
 ---
 
@@ -152,12 +152,13 @@ This follows the same "mechanical/additive first, judgment-heavy last" sequencin
 ## 6. Open items — none of this should be relayed until these are addressed
 
 1. **ISO/IEC/IEEE 24748-4:2026 access** (§0) — needed before the template mapping in Phase A can be finalized against the actual standard rather than secondary summaries. *(Ron is independently sourcing this.)*
-2. **`Role` entity decision** (§3) — pending Workbench's answer to the already-relayed role-taxonomy question. **Now doubly motivated:** both SEMP's "responsibilities and authority" section and `RiskItem.ownerRoleId` (§3.1) need it — worth resolving once, not twice.
-3. **`RiskItem` vs. `Gap` boundary** (§3.1, new) — is `Gap.escalatedToRiskItemId` the right bridge, or should these two entities relate some other way (or not at all)? Not decided here.
-4. **Risk Management Board — PKM entity or not** (§3.1, new) — leaning "not," not committed.
-5. **Whether generated SEMP output itself needs any PKM-level audit trail** (e.g., a record of when/from-what-data-snapshot a SEMP was generated) — genuinely new question, not addressed anywhere above, flagging so it isn't lost.
-6. **Not yet drafted:** the actual migration-plan document and any coaching commands to either coding chat. This proposal is the planning pass Ron asked for — next step is Ron's review, then (if it holds up) turning §4 into a real versioned migration plan and §2 into an actual Architecture Guidance §12 draft, the same two-step pattern used for every prior change in this project.
+2. ~~`Role` entity decision~~ **Resolved — approved to proceed** (§3). Implemented as PKM v0.5.0, Migration Plan v0.4.0 Step 9. No longer blocking anything downstream that depends on it.
+3. ~~`RiskItem` vs. `Gap` boundary~~ **Resolved — agreed as proposed** (§3.1). `Gap.escalatedToRiskItemId` bridge confirmed. Not yet implemented (that's still gated on `RiskItem` itself, item 5 below), but the design question is settled.
+4. **Risk Management Board — parked, not resolved.** (§3.1) "No PKM entity, for now" — explicitly provisional pending a separate risk-planning session Ron intends to hold. Don't treat as final architecture.
+5. **Whether generated SEMP output itself needs any PKM-level audit trail** — **not yet**, per Ron. Left open, not decided either way.
+6. **`RiskItem` itself — not yet implemented.** Items 3 and 4 resolved the *design* of RiskItem's boundaries, but the entity hasn't been proposed as an actual PKM revision the way `Role` just was. That's still bundled with this document's broader SEMP-generation decision, not decoupled the way Role was.
+7. **Not yet drafted:** the actual migration-plan document (beyond Step 9, already split out) and any coaching commands to either coding chat for the rest of this proposal. Next step is Ron's continued review of items 1, 4, 5, and 6 — then (if it holds up) turning §4 into a real versioned migration plan and §2 into an actual Architecture Guidance §12 draft.
 
 ---
 
-*This document is a planning proposal only. Nothing in it has been committed anywhere, and no coaching commands should be drafted for udm-exchange or SE Workbench until Ron has reviewed it and the open items in §6 have at least a direction, if not final answers.*
+*This document is a planning proposal. Role (item 2) has been decoupled and is proceeding independently — see PKM v0.5.0 and Migration Plan v0.4.0. Everything else here remains un-relayed until Ron has reviewed the remaining open items.*
