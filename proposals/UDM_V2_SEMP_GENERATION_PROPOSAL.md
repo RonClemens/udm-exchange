@@ -1,11 +1,12 @@
 # UDM v2.0 — Automated SEMP Generation Architecture (Planning Proposal)
 
-**Version:** 0.2.0 (Exploratory / Proposal — not yet reviewed by Ron, not yet relayed to either coding chat)
+**Version:** 0.2.1 (Exploratory / Proposal — not yet reviewed by Ron, not yet relayed to either coding chat)
 **Last updated:** 2026-07-29
 **Status:** Draft
 **Depends on:** PKM Entity Model v0.4.0, Architecture Guidance v1.4.0, SE Workbench Migration Plan v0.3.1
 
 **Changelog:**
+- **v0.2.1** — Fixed a formatting defect from v0.2.0's edit: the "## 4. Phased migration plan" section header was accidentally deleted when §3.1 was inserted, leaving the Phase A–F table floating under §3.1 with no heading. Content of the table itself was never affected — this is a heading-only fix. Also corrected §1's stale in-prose reference to "PKM v0.3.1" (the table header already said v0.4.0 correctly; the sentence above it hadn't been updated to match).
 - **v0.2.0** — Added §3.1, Risk Management, closing the gap Ron flagged in review: this proposal's original §1 mapping table had no home for risk at all. Grounded in the DoD RIO Management Guide (Dec 2023, now in Project Knowledge) and INCOSE SE Handbook §2.3.4.4/2.3.4.5. Proposes a unified `RiskItem` entity (Risk/Issue/Opportunity, one entity with a type discriminator — mirroring the Milestone `SETR`/`AcquisitionGate` pattern already established, and directly following the RIO Guide's own suggestion that programs may combine all three registers into one). Identifies PRMP as already PKM-conformant via the existing `Deliverable` entity — no new entity needed for the plan document itself. Flags the `Gap`/`RiskItem` boundary as a real open design question, not presumed here.
 - **v0.1.0** — Initial planning pass, scoping what a v2.0 architecture update for automated SEMP generation would actually require, before any migration plan or implementation coaching goes out.
 
@@ -33,7 +34,7 @@ PDKM instance data (real program content — per-program, CUI)
    Generated SEMP (program-specific output — never committed publicly)
 ```
 
-This isn't a new modeling problem so much as a **document-assembly problem layered on top of what already exists.** Looking at the current PKM v0.3.1 entity table against the Handbook's 11-item outline, most sections already have a structural home:
+This isn't a new modeling problem so much as a **document-assembly problem layered on top of what already exists.** Looking at the current PKM v0.4.0 entity table against the Handbook's 11-item outline, most sections already have a structural home:
 
 | SEMP section (Handbook summary) | Existing PKM source |
 |---|---|
@@ -123,6 +124,10 @@ A `Gap` that has real program-level cost/schedule/performance consequence beyond
 Risk statement/description (RIO recommends an If-Then format), root cause narrative, mitigation strategy rationale, consequence justification, and any historical trend/burn-down data points are all real per-program content — same treatment as `Requirement.statement` or `Gap.description` already receive. Nothing about this proposal suggests decomposing narrative risk content into PKM structure.
 
 **Not yet resolved, flagged rather than decided:** whether a Risk Management Board (RMB) — RIO's governance body that approves risks/issues and assigns owners — needs any PKM representation at all, or stays pure PDKM/methodology content (a meeting cadence + membership list, similar to how `Program`/`Project` don't model organizational governance structures today). Leaning toward "no PKM entity needed," but not committing to that without more evidence than one source document provides.
+
+---
+
+## 4. Phased migration plan (draft — risk-sequenced, same discipline as every prior migration plan)
 
 | Phase | What | Risk | Depends on |
 |---|---|---|---|

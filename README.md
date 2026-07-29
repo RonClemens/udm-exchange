@@ -26,7 +26,7 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 | Uniform Stall-Check Obligation | `UDM_WORKFLOW_PROTOCOL.md` §6 | **Merged** into Workflow Protocol v1.3.0 §6 — `RESOLVED` |
 | Source/Target/Batch Structure for Commands | `UDM_WORKFLOW_PROTOCOL.md` §3.2/§3.3 | **Merged** into Workflow Protocol v1.6.0 — `RESOLVED` |
 | Raw URL Required on Cross-Document References | `UDM_WORKFLOW_PROTOCOL.md` §3.4 | **Merged** into Workflow Protocol v1.8.0 — `RESOLVED` (no explicit `CLOSE` issued; marked resolved since §3.4's content fulfills it — flagged in case that's not yet intended) |
-| UDM v2.0 — Automated SEMP Generation Architecture (`proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` v0.2.0) | Architecture Guidance (proposed new §12), PKM (proposed `Role`, `RiskItem` entities) | **Draft** — under Ron's review; §6 lists 5 open items, none of which should be relayed to either coding session until addressed. Not yet actionable. |
+| UDM v2.0 — Automated SEMP Generation Architecture (`proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` v0.2.1) | Architecture Guidance (proposed new §12), PKM (proposed `Role`, `RiskItem` entities) | **Draft** — under Ron's review; §6 lists 5 open items, none of which should be relayed to either coding session until addressed. Not yet actionable. |
 
 ## Open item
 
