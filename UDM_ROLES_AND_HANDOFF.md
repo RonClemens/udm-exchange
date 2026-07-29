@@ -106,7 +106,7 @@ udm-exchange/
 │       ├── PKM_MIGRATION_STATUS_REPORT.md
 │       ├── PKM_ENTITY_MODEL_CONFORMANCE.md      (Superseded by: PKM_MIGRATION_STATUS_REPORT.md)
 │       └── PKM_MIGRATION_PLAN_FEEDBACK.md       (Superseded by: PKM_MIGRATION_STATUS_REPORT.md)
-└── proposals/                              (4 historical, all RESOLVED — see README)
+└── proposals/                              (4 historical RESOLVED + 1 active Draft — see README)
 ```
 
 Future participating apps get their own `migration-plans/<app-name>/` and `feedback/<app-name>/` folders on `main` — no other structural change needed.
