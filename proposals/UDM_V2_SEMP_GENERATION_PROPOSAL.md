@@ -1,11 +1,13 @@
 # UDM v2.0 — Automated SEMP Generation Architecture (Planning Proposal)
 
-**Version:** 0.5.0 (Exploratory / Proposal — Role, RiskItem design, and Phase C all real; only 24748-4 access remains genuinely blocking)
-**Last updated:** 2026-07-29
+**Version:** 0.5.2 (Exploratory / Proposal — Role, RiskItem, and Phase C all real and implemented; only 24748-4 access remains genuinely blocking)
+**Last updated:** 2026-07-30
 **Status:** Draft
 **Depends on:** PKM Entity Model v0.6.0, Architecture Guidance v1.5.0, SE Workbench Migration Plan v0.5.0
 
 **Changelog:**
+- **v0.5.2** — Caught by udm-exchange before committing v0.5.1 (2026-07-30 0020 UTC): Workbench's status report v1.8.0 / SEMP-generation feedback v1.1.0 confirm `RiskItem` is now implemented (their own Step 12 — CRUD route, `RiskItemsPage.tsx`, seed data covering all three `itemType` values, both new `Gap`/`ActionItem` reference fields) and that the Step 10 HANDOFF *did* land on 2026-07-29, just after v0.5.1 was drafted — meaning v0.5.1's "not yet relayed" language was stale before it could even be committed. §5, §6 items 6-7 corrected to reflect RiskItem as implemented and verified, same status as Role and Phase C.
+- **v0.5.1** — Caught on self-review (not flagged externally this time): §6 items 6 and 7 still had the same class of stale claim just fixed in §5 — item 6 said RiskItem/Step 10 was "relayed to Workbench as real guidance" when Workbench had already confirmed that hadn't happened; item 7 described Phase C as pending when it's complete. Both corrected to match §5's accurate state.
 - **v0.5.0** — Phase C complete (Workbench: `buildMilestoneSchedule()`, verified). Corrected a factual error in §5, flagged directly by Workbench (2026-07-29 2353 UTC): this document had claimed Workbench was "the proven implementation partner for Role and RiskItem alike, both verified end-to-end" — RiskItem has not been implemented anywhere; Migration Plan Step 10 exists and is approved but had not yet reached Workbench's session as an explicit relay. §4's Phase C row updated to Complete.
 - **v0.4.0** — Everything but 24748-4 access moved forward in one pass (Ron, 2026-07-29): `RiskItem` implemented as PKM v0.6.0 (§3.1's design shipped, not just proposed — see PKM Migration Plan v0.5.0 Step 10 for Workbench guidance). Architecture Guidance v1.5.0 §11–§12 drafted (SEMP Generation Pattern + brief RiskItem tagging note) — §2 below is now historical record of what was proposed, matching what shipped. §4's Phase B (Role) already complete; Phase C (schedule-table prototype) approved to relay to Workbench as real guidance, no longer held behind "wait for full proposal review." Phase A remains genuinely blocked on 24748-4 access — the one item explicitly deferred, not resolved.
 - **v0.3.0** — Ron's answers to §6 items 2–5: (2) `Role` **approved to proceed now**, decoupled from this proposal's broader decision — implemented as PKM v0.5.0's `Role` entity and Migration Plan v0.4.0's Step 9, not just sketched here anymore. (3) `RiskItem`/`Gap` boundary — **agreed as proposed** (the `escalatedToRiskItemId` bridge). (4) Risk Management Board — **no PKM entity, for now** — explicitly parked pending a separate risk-planning session, not fully closed. (5) Generated SEMP audit trail — **not yet**, left open. §3's Role sketch updated to reflect the entity is now real, not tentative; §3.1 updated to reflect items 3–4's resolution; §6 renumbered accordingly.
@@ -123,7 +125,7 @@ Ron confirmed: distinct entities, bridged rather than merged, as originally prop
 - `RiskItem` (as an Issue) is also already-certain, but its scope is broader — any program-level cost/schedule/performance problem, including ones with zero SE/CM conformance dimension (RIO's own example: a supply-chain-driven schedule slip).
 - **`Gap.escalatedToRiskItemId`** (optional) is the confirmed bridge — a Gap with real program-level cost/schedule/performance consequence beyond its immediate SE/CM finding can escalate into a formal `RiskItem` (typically `itemType: "Issue"`), without merging the two entities or diluting Gap's narrow, precise meaning.
 
-This is now settled design direction, not an open question — ready to fold into a real PKM revision whenever `RiskItem` itself moves from proposal to implementation (still gated, see §6).
+This is now settled design direction and was implemented exactly as agreed — `RiskItem`'s `Gap.escalatedToRiskItemId` bridge shipped in PKM v0.6.0 and is confirmed live in Workbench's own implementation (status report v1.8.0).
 
 ### What stays PDKM (real content, never PKM structure)
 
@@ -150,8 +152,8 @@ This follows the same "mechanical/additive first, judgment-heavy last" sequencin
 
 ## 5. Who does what — status update
 
-- **udm-exchange:** has already committed Architecture Guidance §11–§12, PKM `Role` (v0.5.0) and `RiskItem` (v0.6.0), and Migration Plan Steps 9–10. What's not yet committed: Phase A's actual template-mapping document (blocked on 24748-4) and Phase C's coaching command to Workbench — see accompanying relay.
-- **SE Workbench:** proven implementation partner for `Role` (verified, v1.7.0) and Phase C (schedule-table prototype, complete — verified, `buildMilestoneSchedule()`). **`RiskItem` is not yet implemented anywhere** — Migration Plan v0.5.0 Step 10 exists and is approved, but hadn't reached Workbench's session as an explicit HANDOFF/ACTION as of 2026-07-29 2353 UTC. Corrected here after Workbench flagged this document's earlier claim was inaccurate — see Migration Plan v0.5.0 Step 10 for the actual relay status.
+- **udm-exchange:** has committed Architecture Guidance §11–§12, PKM `Role` (v0.5.0) and `RiskItem` (v0.6.0), and Migration Plan Steps 9–10 — all confirmed relayed and implemented. What remains uncommitted: Phase A's actual template-mapping document, blocked on 24748-4 access.
+- **SE Workbench:** proven implementation partner for `Role` (verified, v1.7.0), Phase C (schedule-table prototype, verified, `buildMilestoneSchedule()`), and now `RiskItem` (their own Step 12, status report v1.8.0 / feedback v1.1.0 — CRUD route, `RiskItemsPage.tsx`, seed data covering all three `itemType` values, both new reference fields). All three of this document's implementation threads are now shipped and verified as of 2026-07-30.
 
 ---
 
@@ -162,9 +164,9 @@ This follows the same "mechanical/additive first, judgment-heavy last" sequencin
 3. ~~`RiskItem` vs. `Gap` boundary~~ **Resolved and shipped.** `Gap.escalatedToRiskItemId` bridge implemented in PKM v0.6.0, exactly as agreed.
 4. **Risk Management Board — still parked, not resolved.** (§3.1) "No PKM entity, for now" — explicitly provisional pending a separate risk-planning session Ron intends to hold. Not addressed by this round; don't treat as final architecture.
 5. **Whether generated SEMP output itself needs any PKM-level audit trail — still not yet.** Left open, not decided either way. Not addressed by this round.
-6. ~~`RiskItem` itself — not yet implemented~~ **Resolved and shipped.** PKM v0.6.0, Migration Plan v0.5.0 Step 10, relayed to Workbench as real guidance (not a proposal).
-7. **Migration plan and coaching commands — partially drafted.** Steps 9 (Role) and 10 (RiskItem) both exist as real Migration Plan entries, already relayed. Architecture Guidance §11–§12 both drafted and live. What's *not* yet drafted: Phase A's actual template-mapping document (blocked on item 1) and Phase E/F's narrative-generation guidance (also blocked on item 1, since prompt design needs the real section list). Phase C (schedule-table prototype) is approved to relay to Workbench now — see accompanying command.
+6. ~~`RiskItem` itself — not yet implemented~~ **Resolved and shipped.** PKM v0.6.0, relayed via Migration Plan v0.5.0 Step 10, implemented by Workbench as their own Step 12 (status report v1.8.0 / feedback v1.1.0) — CRUD route, `RiskItemsPage.tsx`, seed data across all three `itemType` values, both new reference fields.
+7. **Migration plan and coaching commands — status.** Steps 9 (Role) and 10 (RiskItem) both relayed and implemented, confirmed by Workbench directly. Architecture Guidance §11–§12 both drafted and live. Phase C is also complete. What remains genuinely undrafted: Phase A's actual template-mapping document and Phase E/F's narrative-generation guidance — both blocked on item 1 (24748-4 access).
 
 ---
 
-*Only item 1 (24748-4 access) is genuinely blocking anything further in this document. Items 4 and 5 are open but not blocking — they're scoped to future work (a dedicated risk session, and audit-trail design) that doesn't gate what's already shipped. Role and RiskItem are both live; Phase C is cleared to relay.*
+*Only item 1 (24748-4 access) is genuinely blocking anything further in this document. Items 4 and 5 are open but not blocking — they're scoped to future work (a dedicated risk session, and audit-trail design) that doesn't gate what's already shipped. Role, RiskItem, and Phase C are all implemented and verified.*
