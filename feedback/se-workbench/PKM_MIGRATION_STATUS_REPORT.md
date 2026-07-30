@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.7.0
+**Version:** 1.8.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
+**Reports against:** PKM Migration Plan v0.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
 **Changelog:**
+- v1.8.0 (2026-07-30) — added §10, documenting this app's own Step 12: implemented `RiskItem` as a first-class entity per Migration Plan v0.5.0 Step 10 / PKM v0.6.0 §79–82, resolving the `RiskItem` gap flagged in `SEMP_GENERATION_STATUS_REPORT.md` §2. Renumbered former §10 (optional follow-ups) to §11. Updated `Reports against:` to Migration Plan v0.5.0 / Entity Model v0.6.0.
 - v1.7.0 (2026-07-29) — added §9, documenting this app's own Step 11: implemented `Role` as a first-class entity per Migration Plan Step 9 / PKM v0.5.0 §2–§3, resolving Migration Plan §10 item 3. Renumbered former §9 (optional follow-ups) to §10 and retired item 2 there (superseded by this step). Updated `Reports against:` to Migration Plan v0.4.0 / Entity Model v0.5.0.
 - v1.6.0 (2026-07-29) — added §8, documenting this app's own Step 10: a first-slice decomposition of `Specification.sections` into `Requirement`/`ChecklistItem`/`VerificationEvent` records, per design chat's ACTION item 2 (closing the gap Steps 4 and 5 both explicitly deferred). Renumbered former §8 (optional follow-ups) to §9.
 - v1.5.0 (2026-07-29) — added §7, recording the standalone `AcquisitionMilestone` entity's actual removal (design chat ACTION item 1: the coexist-then-deprecate window from Step 9/§6 is now closed, not just verified-closeable). Renumbered former §7 (optional follow-ups) to §8. Updated `Reports against:` to PKM Migration Plan v0.3.1 / Entity Model v0.4.0 (both revved since v1.4.0 — the `ReconciliationEvent` addition; documentation-only from this app's side per the Migration Plan's own v0.3.1 note, no action taken here).
@@ -13,7 +14,7 @@
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
-**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7), Step 9 (its consolidation into Milestone), Step 10 (a first-slice `Specification.sections` decomposition — §8), and Step 11 (`Role` as a first-class entity — §9), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
+**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7), Step 9 (its consolidation into Milestone), Step 10 (a first-slice `Specification.sections` decomposition — §8), Step 11 (`Role` as a first-class entity — §9), and Step 12 (`RiskItem` as a first-class entity — §10), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
 
 ---
 
@@ -265,7 +266,60 @@ custom role persists and is immediately selectable in the assignment dropdown (t
 tailorability this step exists to provide), the PDKM Promises tab surfaces `Role` values, zero
 regressions in unrelated tabs.
 
-## 10. Optional follow-ups (not blockers)
+## 10. Update since v1.7.0 (2026-07-29): `RiskItem` implemented as a first-class entity (this app's Step 12)
+
+Per Migration Plan v0.5.0 Step 10 (canonical guidance *to* this app): implements `RiskItem` per PKM
+Entity Model v0.6.0 §79–82, closing the gap this app's own `SEMP_GENERATION_STATUS_REPORT.md` §2
+flagged (2026-07-29 2353 UTC) — that proposal document's v0.4.0 claim that Workbench was "the
+proven implementation partner for Role and RiskItem alike, both verified end-to-end" was not yet
+accurate for `RiskItem` at the time it was flagged. It is now.
+
+- **New `RiskItem` entity:** `id`, `projectId`, `itemType` (`Risk` | `Issue` | `Opportunity`,
+  same discriminator pattern as `Milestone.milestoneType`'s `SETR`/`AcquisitionGate` split),
+  `category` (free string, deliberately left untagged/unconstrained — same treatment as
+  `ChecklistItem.domain`), `likelihood` (1-5, `null` for `itemType: "Issue"` — this app's own
+  reading of an issue as "already occurred," so probability isn't independently scored),
+  `consequenceCost`/`consequenceSchedule`/`consequencePerformance` (1-5 each), `mitigationStrategy`
+  (`Accept` | `Avoid` | `Transfer` | `Control`), `ownerRoleId` (references `Role`, per Step 11),
+  optional `linkedMilestoneId`/`linkedCiId`, four lifecycle date fields, `status` (`Identified` |
+  `Approved` | `Mitigating` | `Closed` — this app's own reading of the entity's own lifecycle
+  dates, not a literal quote from the canonical spec). `description` is this app's own addition
+  (not literally named in the PKM spec), following `Requirement.statement`'s precedent for
+  entities that need real illustrative content, not just structural fields.
+- **`riskLevel` is derived, not stored** — `client/src/utils/riskItem.ts`'s `deriveRiskLevel()`
+  computes `likelihood x max(consequence dimensions)` per a standard 5x5 risk-matrix banding
+  (1-4 Low, 5-9 Moderate, 10-14 High, 15-25 Critical), treating a null `Issue` likelihood as 1 for
+  this derivation only — same "derived-not-stored" pattern already used for Acquisition Phase and
+  Baseline reconciliation status.
+- **New CRUD route** (`/api/risk-items`), same pattern as every other entity. New `RiskItemsPage.tsx`
+  (direct CRUD, no admin-picklist wrapper needed) — the four 1-5 score fields use `type: "select"`
+  with string options, converted to numbers at the form boundary, mirroring `CotsRecordsPage.tsx`'s
+  own textarea-to-array conversion pattern (`EntityForm` has no native numeric input type).
+- **`Gap.escalatedToRiskItemId`** and **`Recommendation.resolvesRiskItemId`** (both new, optional,
+  nullable): coexist with the pre-existing `blocksMilestoneId`/`resolvesGapId` references, not a
+  replacement for either. Seed data demonstrates both in use: `gap-003` escalates to `risk-001`,
+  and a new `rec-004` resolves `risk-001` directly (distinct from `rec-002`, which already
+  resolves the same underlying finding on the Gap side — a Recommendation resolves a Gap *or* a
+  RiskItem, never both, per this field's own comment).
+- **Seed data** covers all three `itemType` values: `risk-001` (`Risk`, escalated from `gap-003`),
+  `risk-002` (`Issue`, `likelihood: null`, the Baseline A/B serial-protocol divergence already
+  tracked in `ab-001`/`rec-003`), `risk-003` (`Opportunity`, a parallel-test-session idea arising
+  from Baseline B's Ethernet move).
+
+**Schema footprint:** one additive entity (`RiskItem`, 3 seeded records covering all itemType
+values), one additive field each on `Gap` and `Recommendation`. Zero fields removed, zero existing
+records restructured.
+
+**Verification:** clean `tsc -b` build in both workspaces; live-server API check confirming seeded
+`RiskItem` records round-trip correctly (including `likelihood: null` for the `Issue` record); a
+Playwright pass confirming the derived risk-level column renders the correct band for all three
+seeded records (High/Low/Low, matching the 5x5 matrix math by hand), the `Issue` record's edit
+form correctly shows its likelihood field as unset (not defaulted to a stray value), a full
+create→verify→delete round-trip through the real form (not just direct API calls) leaves the
+seed data unchanged, and zero regressions in unrelated tabs (including the PDKM Promises tab,
+which now surfaces `RiskItem.description` under "Gaps & Recommendations").
+
+## 11. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
@@ -275,6 +329,7 @@ These surfaced during implementation and are offered as candidate topics for con
 4. ~~**Requirement/VerificationEvent/ChecklistItem decomposition of `Specification.sections`** remains deferred...~~ **Resolved by §8 above** (first slice, spec-002 only — not a full sweep across all five Specifications; the remaining four are still open, but the mechanism is now proven).
 5. **Promises UI major-group taxonomy (§3)** is this app's own judgment call, not a PKM-derived structure — flagged in case a future cross-app Promises UI conversation wants to compare notes on grouping approaches.
 6. **Acquisition-phase/pathway modeling (§4) — answered in §5 above, resolved.** `AcquisitionPhase` and `AcquisitionPathway` both stay app-side methodology/derived content, not PKM entities (already-conformant-as-a-union and derived-not-stored respectively). The actual gap this question surfaced — AAF Milestone A/B/C had no occurrence data at all — is closed by the new `AcquisitionMilestone` entity (§5). Not offered as a candidate PKM-entity addition: this app's own Milestone entity is already the precedent (a per-baseline gate-occurrence shape), so if a second app independently needs the same AAF-milestone-occurrence concept, extending PKM's own `Milestone` entity description ("SETR gate... etc.") to explicitly cover acquisition-decision gates generically — rather than adding a whole second parallel entity to the canonical model — may be the better fit; flagged here for design chat's judgment, not decided by this app.
+7. **Two `RiskItem` interpretive calls (§10 above) not literally specified in PKM v0.6.0 §79–82** — offered for upstream confirmation, not blocking: (a) `RiskItemStatus`'s four values (`Identified`/`Approved`/`Mitigating`/`Closed`) were derived from the entity's own four lifecycle date fields, not quoted from the canonical spec; (b) treating an `Issue`'s null `likelihood` as 1 for `riskLevel` derivation purposes is this app's own reading of "an issue has already occurred," not a literal quote. If a second app implements `RiskItem` independently, worth checking both land the same way.
 
 ---
 

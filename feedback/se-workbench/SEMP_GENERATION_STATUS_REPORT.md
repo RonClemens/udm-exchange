@@ -1,10 +1,11 @@
 # SE Workbench — SEMP Generation Proposal Status Report
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** UDM v2.0 SEMP Generation Proposal v0.4.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md))
+**Reports against:** UDM v2.0 SEMP Generation Proposal v0.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md))
 
 **Changelog:**
+- v1.1.0 (2026-07-30) — added §3: the §2 correction is now moot — `RiskItem` has since been implemented for real via an explicit HANDOFF (Migration Plan v0.5.0 Step 10; see `PKM_MIGRATION_STATUS_REPORT.md` v1.8.0 §10). Also notes the proposal document's own v0.5.0 already corrected the overstated claim independently. Updated `Reports against:` to proposal v0.5.0.
 - v1.0.0 (2026-07-29) — initial report: Phase C (schedule-table prototype) implemented, verified, deployed. Also flags a factual correction needed in the proposal document itself (see §2).
 
 **Status:** Phase C only. This is a new, separate feedback document from `PKM_MIGRATION_STATUS_REPORT.md` since it tracks against a different document lineage (the SEMP-generation proposal, not the PKM Migration Plan) — created now because this is this app's first delivery against that proposal specifically.
@@ -58,6 +59,19 @@ claim retroactively true.
 
 **Not a blocker** — this app is ready to take up Step 10 whenever it's relayed as an explicit
 HANDOFF/ACTION, same as every step so far.
+
+## 3. §2 resolved: `RiskItem` now genuinely implemented
+
+The gap flagged in §2 is closed. An explicit HANDOFF for Migration Plan v0.5.0 Step 10 was
+relayed on 2026-07-29, and `RiskItem` is now a real, implemented, verified entity in this app —
+see `PKM_MIGRATION_STATUS_REPORT.md` v1.8.0 §10 for the full implementation report (entity shape,
+derived `riskLevel`, CRUD route, `RiskItemsPage.tsx`, seed data covering all three `itemType`
+values, and the two new `Gap`/`Recommendation` reference fields).
+
+Separately, the proposal document's own v0.5.0 had already corrected the overstated §5 claim
+this report's §2 flagged, independent of (and consistent with) this resolution. Recording both
+here so this document's own changelog reflects the correction landing on both sides, not just
+the proposal's.
 
 ---
 
