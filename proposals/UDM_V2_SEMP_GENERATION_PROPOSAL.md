@@ -1,11 +1,12 @@
 # UDM v2.0 — Automated SEMP Generation Architecture (Planning Proposal)
 
-**Version:** 0.4.0 (Exploratory / Proposal — Role and RiskItem both real; Architecture Guidance §11–§12 drafted; only 24748-4 access remains genuinely blocking)
+**Version:** 0.5.0 (Exploratory / Proposal — Role, RiskItem design, and Phase C all real; only 24748-4 access remains genuinely blocking)
 **Last updated:** 2026-07-29
 **Status:** Draft
 **Depends on:** PKM Entity Model v0.6.0, Architecture Guidance v1.5.0, SE Workbench Migration Plan v0.5.0
 
 **Changelog:**
+- **v0.5.0** — Phase C complete (Workbench: `buildMilestoneSchedule()`, verified). Corrected a factual error in §5, flagged directly by Workbench (2026-07-29 2353 UTC): this document had claimed Workbench was "the proven implementation partner for Role and RiskItem alike, both verified end-to-end" — RiskItem has not been implemented anywhere; Migration Plan Step 10 exists and is approved but had not yet reached Workbench's session as an explicit relay. §4's Phase C row updated to Complete.
 - **v0.4.0** — Everything but 24748-4 access moved forward in one pass (Ron, 2026-07-29): `RiskItem` implemented as PKM v0.6.0 (§3.1's design shipped, not just proposed — see PKM Migration Plan v0.5.0 Step 10 for Workbench guidance). Architecture Guidance v1.5.0 §11–§12 drafted (SEMP Generation Pattern + brief RiskItem tagging note) — §2 below is now historical record of what was proposed, matching what shipped. §4's Phase B (Role) already complete; Phase C (schedule-table prototype) approved to relay to Workbench as real guidance, no longer held behind "wait for full proposal review." Phase A remains genuinely blocked on 24748-4 access — the one item explicitly deferred, not resolved.
 - **v0.3.0** — Ron's answers to §6 items 2–5: (2) `Role` **approved to proceed now**, decoupled from this proposal's broader decision — implemented as PKM v0.5.0's `Role` entity and Migration Plan v0.4.0's Step 9, not just sketched here anymore. (3) `RiskItem`/`Gap` boundary — **agreed as proposed** (the `escalatedToRiskItemId` bridge). (4) Risk Management Board — **no PKM entity, for now** — explicitly parked pending a separate risk-planning session, not fully closed. (5) Generated SEMP audit trail — **not yet**, left open. §3's Role sketch updated to reflect the entity is now real, not tentative; §3.1 updated to reflect items 3–4's resolution; §6 renumbered accordingly.
 - **v0.2.1** — Fixed a formatting defect from v0.2.0's edit: the "## 4. Phased migration plan" section header was accidentally deleted when §3.1 was inserted, leaving the Phase A–F table floating under §3.1 with no heading. Content of the table itself was never affected — this is a heading-only fix. Also corrected §1's stale in-prose reference to "PKM v0.3.1" (the table header already said v0.4.0 correctly; the sentence above it hadn't been updated to match).
@@ -138,7 +139,7 @@ Risk statement/description (RIO recommends an If-Then format), root cause narrat
 |---|---|---|---|
 | **A** | Formalize the SEMP Template — section-by-section mapping table (§1), documentation only | Low | **Blocked** — genuinely needs ISO/IEC/IEEE 24748-4:2026 (§0), deferred by Ron to tomorrow. The only phase still gated. |
 | **B** | `Role` entity | Low-moderate | **Complete** — PKM v0.5.0, Migration Plan Step 9, implemented and verified by Workbench (v1.7.0). |
-| **C** | Prototype: generate the **schedule/milestone table only** — pure structured assembly from existing `Milestone` records, zero new PDKM tailoring needed, zero AI calls | Low | **Approved to relay** — doesn't depend on Phase A's exact template mapping (schedule/milestone content isn't where 24748-4's clause-level detail matters); ready for real Workbench guidance now. |
+| **C** | Prototype: generate the **schedule/milestone table only** — pure structured assembly from existing `Milestone` records, zero new PDKM tailoring needed, zero AI calls | Low | **Complete** — `buildMilestoneSchedule()`, verified (Playwright confirmed chronological ordering via DOM inspection). Zero schema change, zero AI calls, as planned. |
 | **D** | Extend structured generation to deliverables, RACI (`Role`/`RiskItem` both now exist), technical scope (CI/Requirement tree) | Moderate | Ready once Phase C proves the pattern — not yet relayed, but no longer blocked on anything other than sequencing. |
 | **E** | Narrative sections via AI-assisted drafting from PDKM content (objectives, constraints, SE process description) | High — genuine content generation, not mechanical assembly | Blocked on Phase A (needs the real section list from 24748-4 before drafting narrative-section prompts). |
 | **F** | Full-document assembly + validation pass — does it read coherently, does a real reviewer accept it as a usable SEMP draft | High (judgment, not technical) | Blocked on Phase E. |
@@ -150,7 +151,7 @@ This follows the same "mechanical/additive first, judgment-heavy last" sequencin
 ## 5. Who does what — status update
 
 - **udm-exchange:** has already committed Architecture Guidance §11–§12, PKM `Role` (v0.5.0) and `RiskItem` (v0.6.0), and Migration Plan Steps 9–10. What's not yet committed: Phase A's actual template-mapping document (blocked on 24748-4) and Phase C's coaching command to Workbench — see accompanying relay.
-- **SE Workbench:** already the proven implementation partner for Role and RiskItem alike, both verified end-to-end. Phase C (schedule-table prototype) is next — approved to relay now, doesn't need Phase A's exact mapping to start.
+- **SE Workbench:** proven implementation partner for `Role` (verified, v1.7.0) and Phase C (schedule-table prototype, complete — verified, `buildMilestoneSchedule()`). **`RiskItem` is not yet implemented anywhere** — Migration Plan v0.5.0 Step 10 exists and is approved, but hadn't reached Workbench's session as an explicit HANDOFF/ACTION as of 2026-07-29 2353 UTC. Corrected here after Workbench flagged this document's earlier claim was inaccurate — see Migration Plan v0.5.0 Step 10 for the actual relay status.
 
 ---
 
