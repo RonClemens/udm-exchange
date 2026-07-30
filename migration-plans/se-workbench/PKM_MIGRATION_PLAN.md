@@ -1,10 +1,11 @@
 # SE Workbench — PKM Migration Plan
 
-**Version:** 0.6.0 (Draft — for Workbench repo feedback)
+**Version:** 0.6.1 (Draft — for Workbench repo feedback)
 **Target repo:** the SE Workbench app (formerly "PDR Reconciliation & Baseline Alignment Workbench")
 **Based on:** PKM Entity & Relationship Model v0.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 
 **Changelog:**
+- **v0.6.1** — Steps 12 and 14 item 2 confirmed complete, verified against status report v1.9.0 §11. Steps 13 and 14 items 1/3 confirmed **already resolved before the ACTION was sent** — the "real export" design chat cross-checked was taken against Workbench's GitHub Pages static demo, last redeployed 2026-07-28, two days stale relative to the work actually completed. Root cause identified precisely (§12 item 8 of the same report): the static/localStorage deploy mode's backfill logic only backfills entirely-missing collections for a cached browser session, never new fields on an already-existing collection's rows — so a browser that cached the demo before a schema change misses it silently, indefinitely, with no auto-recovery. **Step 11 remains genuinely unresolved** — Workbench checked every commit available and found `baselineId`/`projectId` populated in all of them, so the stale-cache explanation doesn't account for design chat's original finding there. Recommending a fresh export directly against `mock-data/seed.json` (not the live demo) to settle this definitively, per Workbench's own §12 item 8 recommendation.
 - **v0.6.0** — Added Steps 11–14, all sourced from a real backend export cross-checked against the generated SEMP migration package (design chat, 2026-07-30), not from prose review alone. Step 11: backfill `baselineId`/`projectId` on CI/Specification/SafetyDeliverable/ProgramPlanningDeliverable records — the legacy `baseline` string field is still doing the real work everywhere. Step 12: migrate real, populated `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId` data into an actual `ReconciliationEvent` record — this predates `ReconciliationEvent`'s existence and was never previously assigned as a migration step; that's a planning gap on design chat's side, not an implementation defect, called out as such in Step 12 below. Step 13: verify/backfill `Milestone.milestoneType` — every milestone record in the export is missing it, and the generated schedule table's Type column renders blank as a direct, visible symptom. Step 14: backfill `Gap.escalatedToRiskItemId`, `ActionItem.resolvesRiskItemId`, and `ActionItem.assignedRoleId` on the three legacy records whose narrative text already claims these relationships but whose structural fields don't reflect them. Fixed stale `Based on:` Architecture Guidance version (was v1.4.0, now v1.5.0).
 - **v0.5.0** — Added Step 10: implement `RiskItem` as a first-class entity (PKM v0.6.0 §2–§3), approved to proceed now per Ron's Q2/Q3 answers on the SEMP-generation proposal (2026-07-29). Renumbered "Open questions" from §10 to §11 to avoid collision with the new step, same renumbering discipline used when Step 9 was added.
 - **v0.4.0** — Added Step 9: implement `Role` as a first-class entity (PKM v0.5.0 §2–§3), per Ron's go-ahead to proceed now, decoupled from the broader SEMP-generation proposal decision. Scoped directly from Workbench's own estimate in their Migration Plan §10 item 3 response (new entity + CRUD route + client wiring across both type-mirror files + admin UI + `owner`→`assignedRoleId` migration).
@@ -14,7 +15,7 @@
 - **v0.2.0** — Renamed this plan's numbered units from "Phase" to "Step" to resolve terminology collision with Architecture Guidance §7's own migration-sequencing phases. Expanded Step 2's blast radius to include `sempExport.ts` and `recoveryProgramGuidance.ts`, and flagged its dependency on Architecture Guidance's pending content-split step. Carved `AbCompatibilityRow` out of Step 2's single-`baselineId` treatment. Added explicit methodology/data split note to Step 3. All per SE Workbench's round-2 feedback.
 - **v0.1.0** — Initial draft.
 
-**Purpose:** A concrete, phased plan for migrating this app's schema toward PKM conformance, sequenced by regression risk per Architecture Guidance §7 (mechanical/low-risk first, judgment-heavy content work last). Steps 1–7 are historical record at this point — Workbench has already implemented, verified, and deployed all of them. **Step 8 is the only step in this document Workbench has not yet implemented** — it exists because PKM v0.3.0/v0.3.1 changed shape *after* Workbench's own independent Step 8 (`AcquisitionMilestone`) shipped, and that entity needs to be reconciled with the now-canonical shape.
+**Purpose:** A concrete, phased plan for migrating this app's schema toward PKM conformance, sequenced by regression risk per Architecture Guidance §7 (mechanical/low-risk first, judgment-heavy content work last). Steps 1–10 and 12, 14 are complete (all implemented, verified, deployed). **Step 11 is the only step in this document with an open, unresolved status** — a genuine discrepancy neither confirmed as a real gap nor cleanly explained by the stale-static-demo theory that resolved Steps 13/14 items 1&3; see Step 11 below.
 
 ---
 
@@ -96,7 +97,7 @@
 
 ---
 
-## 8. Step 8 — Consolidate `AcquisitionMilestone` into `Milestone` (new guidance)
+## 8. Step 8 — Consolidate `AcquisitionMilestone` into `Milestone` (new guidance) — ✅ Complete
 
 **Why this step exists, and why it's different from every step above:** Workbench independently identified and closed a real gap — AAF Milestone A/B/C decision-gate occurrence had no data representation at all — by adding a new `AcquisitionMilestone` entity (their own Step 8, status report §5). That work was good and directly informed PKM v0.3.0's own Milestone broadening. But the canonical model resolved the underlying question differently than a fully separate entity: **one `Milestone` entity with a `milestoneType` discriminator (`SETR` | `AcquisitionGate`)**, not two parallel entities. This step asks Workbench to fold its already-shipped `AcquisitionMilestone` entity into the existing `Milestone` entity, rather than leaving both to drift as separate structures.
 
@@ -114,7 +115,7 @@
 
 ---
 
-## 9. Step 9 — Implement `Role` as a first-class entity (new, approved to proceed)
+## 9. Step 9 — Implement `Role` as a first-class entity — ✅ Complete
 
 **Approved to proceed now**, decoupled from the broader SEMP-generation proposal decision (Ron, 2026-07-29) — this doesn't wait on that proposal's other open items.
 
@@ -132,7 +133,7 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 ---
 
-## 10. Step 10 — Implement `RiskItem` as a first-class entity (new, approved to proceed)
+## 10. Step 10 — Implement `RiskItem` as a first-class entity — ✅ Complete
 
 **Approved to proceed now** (Ron, 2026-07-29) — same decoupling as Step 9, independent of the SEMP proposal's remaining open items (24748-4 access, Risk Management Board, SEMP audit trail).
 
@@ -149,7 +150,9 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 ---
 
-## 11. Step 11 — Backfill `baselineId`/`projectId` on CI/Specification/SafetyDeliverable/ProgramPlanningDeliverable
+## 11. Step 11 — Backfill `baselineId`/`projectId` on CI/Specification/SafetyDeliverable/ProgramPlanningDeliverable — ⚠️ Unresolved, needs a fresh export to settle
+
+**Status update (2026-07-30):** Workbench checked all four record types against current data and every commit they could find — `baselineId`/`projectId` populated (not null) in all of them, all the way back to Migration Step 1/2. This doesn't match design chat's original export finding, and unlike Steps 13/14 below, the stale-static-demo explanation doesn't cleanly account for it either (see §12 item 1 of status report v1.9.0). **Genuinely unresolved, not closed.** Next step: a fresh export taken directly against `mock-data/seed.json` (not the live GitHub Pages demo, which can serve a stale cached build — see the note at the bottom of Step 13 below) to determine whether this was a one-off export artifact or a real, still-unexplained discrepancy.
 
 **Found via a real backend export cross-check (design chat, 2026-07-30), not a code review.** Every `CI`, `Specification`, `SafetyDeliverable`, and `ProgramPlanningDeliverable` record in the export has `baselineId: null` and `projectId: null` — the generated SEMP document's baseline grouping is entirely dependent on a legacy `baseline: "Baseline A"` string field, not the real foreign-key relationship these entities are supposed to have per PKM (and per this plan's own Step 2, which promoted `Baseline` to an entity specifically so other entities could reference it properly).
 
@@ -161,7 +164,7 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 ---
 
-## 12. Step 12 — Migrate real `Baseline` reconciliation data into a `ReconciliationEvent` record
+## 12. Step 12 — Migrate real `Baseline` reconciliation data into a `ReconciliationEvent` record — ✅ Complete
 
 **This one needs a correction on design chat's part, stated plainly:** PKM v0.4.0's changelog claimed `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId` were "reserved but never populated in any known implementation," and removed them from the model outright on that basis — treating it as a zero-migration-cost change. **That assumption was wrong.** The real export shows both fields populated (`BASELINE-A.reconciledIntoBaselineId = BASELINE-B`, `BASELINE-B.reconciledFromBaselineId = BASELINE-A`), and no migration step was ever assigned to move that real data onto the new entity before this was discovered. This is a planning gap on design chat's side — Workbench's implementation did nothing wrong; it was simply never asked to do this step, because design chat incorrectly believed there was nothing to migrate.
 
@@ -173,7 +176,9 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 ---
 
-## 13. Step 13 — Verify/backfill `Milestone.milestoneType`
+## 13. Step 13 — Verify/backfill `Milestone.milestoneType` — ✅ Already resolved before this ACTION was sent
+
+**Status update (2026-07-30):** already backfilled in current data (0/22 missing), completed earlier in this same exchange via Steps 8/9. The original export finding (16/16 missing) matched exactly a commit that was live on Workbench's GitHub Pages static demo before a 2026-07-28→2026-07-30 redeploy gap — the export was almost certainly taken against that stale cached build, not this repo's current state. **Root cause identified:** the static/localStorage deploy mode's backfill logic only backfills entirely-missing top-level collections for a cached browser session, never new fields added to an already-existing collection's rows — a browser that cached the demo before a schema change misses it silently, indefinitely, with no auto-recovery. This is a real, previously-undocumented limitation worth Architecture Guidance's attention for any app using the §3.1 static-deploy exception, not just this one.
 
 Every milestone record in the export is missing `milestoneType` entirely — not defaulted to `"SETR"`, just absent. This is directly visible in the generated SEMP's schedule table: the "Type" column is blank on all 16 rows, both baselines.
 
@@ -184,7 +189,9 @@ Every milestone record in the export is missing `milestoneType` entirely — not
 
 ---
 
-## 14. Step 14 — Backfill `Gap.escalatedToRiskItemId` and `ActionItem` `resolvesRiskItemId`/`assignedRoleId` on legacy records
+## 14. Step 14 — Backfill `Gap.escalatedToRiskItemId` and `ActionItem` `resolvesRiskItemId`/`assignedRoleId` on legacy records — ✅ Complete (item 2 fresh; items 1/3 already resolved)
+
+**Status update (2026-07-30):** item 2 (`rec-003.resolvesRiskItemId`) implemented fresh, backfilled to `"risk-002"`. Items 1 and 3 (`gap-003.escalatedToRiskItemId`, `assignedRoleId` on the three original recommendations) were already populated in current data as part of Workbench's own Steps 11/12 work — the original export's stale-static-demo build predates `Role`/`RiskItem` entirely, so it couldn't have shown them populated regardless. Same root cause as Step 13, above.
 
 Three specific records where the narrative text already claims a relationship the structural fields don't reflect:
 
