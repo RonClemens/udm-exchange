@@ -1,10 +1,11 @@
 # SE Workbench — PKM Migration Plan
 
-**Version:** 0.5.0 (Draft — for Workbench repo feedback)
+**Version:** 0.6.0 (Draft — for Workbench repo feedback)
 **Target repo:** the SE Workbench app (formerly "PDR Reconciliation & Baseline Alignment Workbench")
 **Based on:** PKM Entity & Relationship Model v0.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 
 **Changelog:**
+- **v0.6.0** — Added Steps 11–14, all sourced from a real backend export cross-checked against the generated SEMP migration package (design chat, 2026-07-30), not from prose review alone. Step 11: backfill `baselineId`/`projectId` on CI/Specification/SafetyDeliverable/ProgramPlanningDeliverable records — the legacy `baseline` string field is still doing the real work everywhere. Step 12: migrate real, populated `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId` data into an actual `ReconciliationEvent` record — this predates `ReconciliationEvent`'s existence and was never previously assigned as a migration step; that's a planning gap on design chat's side, not an implementation defect, called out as such in Step 12 below. Step 13: verify/backfill `Milestone.milestoneType` — every milestone record in the export is missing it, and the generated schedule table's Type column renders blank as a direct, visible symptom. Step 14: backfill `Gap.escalatedToRiskItemId`, `ActionItem.resolvesRiskItemId`, and `ActionItem.assignedRoleId` on the three legacy records whose narrative text already claims these relationships but whose structural fields don't reflect them. Fixed stale `Based on:` Architecture Guidance version (was v1.4.0, now v1.5.0).
 - **v0.5.0** — Added Step 10: implement `RiskItem` as a first-class entity (PKM v0.6.0 §2–§3), approved to proceed now per Ron's Q2/Q3 answers on the SEMP-generation proposal (2026-07-29). Renumbered "Open questions" from §10 to §11 to avoid collision with the new step, same renumbering discipline used when Step 9 was added.
 - **v0.4.0** — Added Step 9: implement `Role` as a first-class entity (PKM v0.5.0 §2–§3), per Ron's go-ahead to proceed now, decoupled from the broader SEMP-generation proposal decision. Scoped directly from Workbench's own estimate in their Migration Plan §10 item 3 response (new entity + CRUD route + client wiring across both type-mirror files + admin UI + `owner`→`assignedRoleId` migration).
 - **v0.3.1** — Resolved §9 item 5 (no hard deadline needed for the `AcquisitionMilestone` coexistence window, per Workbench's Step 9 report). Added a note under Step 2 (§2 below): PKM v0.4.0 replaced Baseline's reserved `reconciledFromBaselineId`/`reconciledIntoBaselineId` fields with a new `ReconciliationEvent` entity — since Workbench never populated those reserved fields, this is a documentation-only note for Workbench's own future Step 2 record, not a migration action; no code change implied unless/until Workbench chooses to model reconciliation at all.
@@ -60,7 +61,7 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- `satisfiedByCiIds` modeled many-to-many. Real seed data (`delta-001`) confirmed this is a genuine case, not a hypothetical — **resolves open question §11 item 1 below.**
+- `satisfiedByCiIds` modeled many-to-many. Real seed data (`delta-001`) confirmed this is a genuine case, not a hypothetical — **resolves open question §15 item 1 below.**
 - `parentRequirementId` demonstrated via a second requirement implicitly part of the first.
 
 ---
@@ -79,7 +80,7 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- Real unification demonstrated: a finding previously tracked by two separate mechanisms (a CI's over-decomposition flag and a Delta Matrix row) now references one `Gap` record — **resolves open question §11 item 2 below.**
+- Real unification demonstrated: a finding previously tracked by two separate mechanisms (a CI's over-decomposition flag and a Delta Matrix row) now references one `Gap` record — **resolves open question §15 item 2 below.**
 - `Recommendation` deliberately left untouched here, picked up in Step 7.
 - Workbench's own follow-up (status report §6 item 3): current implementation uses a single `foundInEntityType`/`foundInEntityId` per Gap, but real data shows a finding can be found in one place while referenced by multiple other mechanisms — flagged as a candidate future PKM cardinality question, not resolved by this plan.
 
@@ -91,7 +92,7 @@
 
 - `Recommendation.owner` converted from free text to a five-role taxonomy: Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager.
 - `resolvesGapId` added, coexisting with the existing `relatedCiId`.
-- **Partially resolves open question §11 item 3 below** — resolved locally; Workbench's own status report frames this as "a pragmatic starting cut, not a definitive one" and asks whether it's a reasonable cross-app default. That question is not answered by this plan.
+- **Partially resolves open question §15 item 3 below** — resolved locally; Workbench's own status report frames this as "a pragmatic starting cut, not a definitive one" and asks whether it's a reasonable cross-app default. That question is not answered by this plan.
 
 ---
 
@@ -117,7 +118,7 @@
 
 **Approved to proceed now**, decoupled from the broader SEMP-generation proposal decision (Ron, 2026-07-29) — this doesn't wait on that proposal's other open items.
 
-This is guidance *to* Workbench again, same direction as Step 8, but this time scoped directly from Workbench's own estimate (Migration Plan §11 item 3 response) rather than design chat guessing at implementation cost:
+This is guidance *to* Workbench again, same direction as Step 8, but this time scoped directly from Workbench's own estimate (Migration Plan §15 item 3 response) rather than design chat guessing at implementation cost:
 
 - **New `Role` entity:** `id`, `projectId`, `name`, `authorityDescription` (optional), `isDefault` (boolean). Seed with the existing five-role set (Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager) as `isDefault: true` records — this preserves the taxonomy Workbench already validated, just makes it data instead of a hardcoded union.
 - **New CRUD route** for `Role` (create/list/update/delete), mirroring the pattern already used for every other entity.
@@ -127,7 +128,7 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 **Risk:** low-moderate, mechanical in shape (new entity + CRUD + coexisting reference field, the same recipe as Steps 1–3) but touches more surface area than those did (a new admin UI, not just data modeling) — closer in scope to Step 7's original role-taxonomy work than to Step 1's pure additive record creation.
 
-**Not part of this step:** any `RiskItem`-side use of `Role` (proposed in the SEMP-generation proposal, `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §3.1) — that's a separate, still-gated decision. This step is scoped to closing Migration Plan §11 item 3 alone.
+**Not part of this step:** any `RiskItem`-side use of `Role` (proposed in the SEMP-generation proposal, `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §3.1) — that's a separate, still-gated decision. This step is scoped to closing Migration Plan §15 item 3 alone.
 
 ---
 
@@ -148,7 +149,54 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 ---
 
-## 11. Open questions for Workbench's team before implementation starts
+## 11. Step 11 — Backfill `baselineId`/`projectId` on CI/Specification/SafetyDeliverable/ProgramPlanningDeliverable
+
+**Found via a real backend export cross-check (design chat, 2026-07-30), not a code review.** Every `CI`, `Specification`, `SafetyDeliverable`, and `ProgramPlanningDeliverable` record in the export has `baselineId: null` and `projectId: null` — the generated SEMP document's baseline grouping is entirely dependent on a legacy `baseline: "Baseline A"` string field, not the real foreign-key relationship these entities are supposed to have per PKM (and per this plan's own Step 2, which promoted `Baseline` to an entity specifically so other entities could reference it properly).
+
+- **Backfill, don't rename:** populate `baselineId` (and `projectId` where applicable) on every existing record by resolving the legacy `baseline` string against the real `Baseline` entity (`"Baseline A"` → `BASELINE-A`'s id, etc.). This is a one-time data migration, not a schema change — the fields already exist and are already null, just unpopulated.
+- **Coexist, then deprecate the string field** — same discipline as every step so far. Don't remove `baseline` until every consumer (UI, exports, this SEMP generator) reads `baselineId` instead and that's been verified.
+- **This is likely the root cause of the interface-misgrouping issue** design chat found in the generated SEMP package (a Baseline A ↔ Baseline A interface record filed under the "Baseline B" section) — the generator has nothing reliable to group by, so worth re-checking that specific case once this backfill lands.
+
+**Risk:** low-moderate. Pure backfill, no new entity, but touches four record types across the whole dataset — verify row counts before/after to confirm nothing silently failed to resolve.
+
+---
+
+## 12. Step 12 — Migrate real `Baseline` reconciliation data into a `ReconciliationEvent` record
+
+**This one needs a correction on design chat's part, stated plainly:** PKM v0.4.0's changelog claimed `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId` were "reserved but never populated in any known implementation," and removed them from the model outright on that basis — treating it as a zero-migration-cost change. **That assumption was wrong.** The real export shows both fields populated (`BASELINE-A.reconciledIntoBaselineId = BASELINE-B`, `BASELINE-B.reconciledFromBaselineId = BASELINE-A`), and no migration step was ever assigned to move that real data onto the new entity before this was discovered. This is a planning gap on design chat's side — Workbench's implementation did nothing wrong; it was simply never asked to do this step, because design chat incorrectly believed there was nothing to migrate.
+
+- **Create one `ReconciliationEvent` record** from the existing data: `fromBaselineId: "BASELINE-B"`, `intoBaselineId: "BASELINE-A"`, `status`: your best read of current reality (likely `"In Progress"`, given Baseline B is still early — SFR in progress — and this is an active reconciliation effort, not a completed one). `initiatedDate`/`completedDate`: use whatever real dates you have, or leave `completedDate` null if it's ongoing.
+- **`evidenceEntityType`/`evidenceEntityIds`**: populate from `abCompatibility` — both `ab-001` and `ab-002` are exactly the kind of per-interface assessment PKM v0.4.0's `ReconciliationEvent` design anticipated as evidence. `evidenceEntityType: "AbCompatibilityRow"`, `evidenceEntityIds: ["ab-001", "ab-002"]`.
+- **Remove `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId`** once the `ReconciliationEvent` record is created and verified — this is the actual deprecation this time, not a documentation-only note like v0.3.1 mistakenly recorded.
+
+**Risk:** low. One record to create from data that already exists in a clear, unambiguous shape; one field removal after verification.
+
+---
+
+## 13. Step 13 — Verify/backfill `Milestone.milestoneType`
+
+Every milestone record in the export is missing `milestoneType` entirely — not defaulted to `"SETR"`, just absent. This is directly visible in the generated SEMP's schedule table: the "Type" column is blank on all 16 rows, both baselines.
+
+- If Step 8's original backfill (v0.3.0, "backfill all current `Milestone` records with `milestoneType: 'SETR'`") was never actually run against this environment's data, run it now — this should be a fast, low-risk operation given the field already exists in the schema.
+- If the field *was* backfilled and this export simply predates that, no action needed beyond confirming a fresh export shows it populated — flag which case this turns out to be, since it affects how much to trust other "already complete" steps' backfills against real data going forward.
+
+**Risk:** low. Straightforward backfill or a confirmation that one already happened.
+
+---
+
+## 14. Step 14 — Backfill `Gap.escalatedToRiskItemId` and `ActionItem` `resolvesRiskItemId`/`assignedRoleId` on legacy records
+
+Three specific records where the narrative text already claims a relationship the structural fields don't reflect:
+
+- **`gap-003.escalatedToRiskItemId`** should be `"risk-001"` — `risk-001`'s own description explicitly states "escalated from gap-003."
+- **`rec-003` (Recommendation)** — its text describes the mitigation `risk-002` (the interface-compatibility Issue) needs; if this Recommendation *is* that mitigation's ActionItem, set `resolvesRiskItemId: "risk-002"`.
+- **All three `recommendations` records** have `owner: ""` and no `assignedRoleId` — these predate the Step 9 Role migration and were never backfilled. Assign real roles where the text implies one (e.g. `rec-001`/`rec-002`, CI-structure and ECP recommendations, plausibly `role-cm`; `rec-003`, the software-side adapter-layer work, plausibly `role-sw`) — your call on the actual mapping, this is a judgment call design chat shouldn't make for you.
+
+**Risk:** low. Small, targeted backfill on three known records — no schema change, no new entity.
+
+---
+
+## 15. Open questions for Workbench's team before implementation starts
 
 1. ~~Does a `Requirement` in this app's real data ever get satisfied by more than one CI, or is that always one-to-one?~~ **Resolved.** Yes — confirmed many-to-many by real seed data (`delta-001`), per status report §1 Step 4. No further input needed.
 2. ~~For Gap unification (Step 6): are there UI features, filters, or reports built specifically against `DeltaMatrixRow`, `overDecompositionFlag`, or `Recommendation` as distinct types that would need parallel updates, or can they be safely generalized?~~ **Resolved.** Successfully unified in practice — one existing finding tracked by two prior mechanisms now references a single `Gap` record, per status report §1 Step 6. A related but distinct question (`foundIn` cardinality — one location per finding vs. multiple) remains open per status report §6 item 3, not this question.
