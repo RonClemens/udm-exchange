@@ -1,11 +1,12 @@
 # UDM Effort — Workflow Protocol: States, Commands, and Handoff Triggers
 
-**Version:** 1.9.0
-**Last updated:** 2026-07-29
+**Version:** 1.10.0
+**Last updated:** 2026-07-30
 **Status:** Active
 **Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.2.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
 
 **Changelog:**
+- **v1.10.0** — Changed §3.2's `Timestamp:` convention from UTC to EDT, per Ron's direction (2026-07-30). All markdown command batch headers should carry an EDT timestamp going forward, not UTC — this document is what defines the format every entity follows, so the convention itself needed a real revision, not just a habit change on any one entity's side. Existing commands already timestamped in UTC during the transition period aren't errors; they predate this version.
 - **v1.9.0** — Added §3.5, **Documentation Drift Reconciliation**: a named convention for handling the case where two-or-more canonical documents describe incompatible mechanics for the same thing, generalized from how this exact situation was actually handled on 2026-07-29 (a design-chat provenance check found `UDM_ROLES_AND_HANDOFF.md` v1.1.0 contradicting both `README.md` and `UDM_EXCHANGE_ACCESS_PROTOCOL.md` on whether Workbench has direct write access to `udm-exchange`). Corrected §5, which asserted "Ron remains the only relay point between the other three entities" — stale in the same way and by the same root cause as the Roles & Handoff line it was restating; see `UDM_ROLES_AND_HANDOFF.md` v1.2.0 for the corrected version. Updated the companion-document reference above to v1.2.0.
 - **v1.8.0** — Made SHA-pinned verification symmetric: §3.1 now requires any entity re-verifying a `CONFIRM` — not just the entity that pushed it — to use a SHA-pinned URL before treating a mismatch as confirmed failure. Added directly after a branch-pinned URL returned stale content on design chat's side across many checks in this thread, while the SHA-pinned URL for the same commit was correct on first fetch. Also added §3.4, the cross-reference convention: structural header citations (`Companion to:`, `Supersedes:`, etc.) should carry a branch-pinned raw URL alongside the name/version, distinct from §3.1's SHA-pinned verification links — a citation should always resolve to current truth, not freeze a moment in time. Correction to a prior draft note: the `@domain-placeholder` convention is Architecture Guidance content (already merged there as §10, v1.4.0) — it was mistakenly listed as pending for this document; it isn't, and has no further action here.
 - **v1.7.0** — §3.1 now requires SHA-pinned raw URLs, not branch-pinned ones, for self-verification and for any downstream `CONFIRM` check. Root cause: a branch-pinned URL (`.../main/<path>`) can lag the actual commit for a period after a push — observed directly when a Workbench self-verification and a design-chat re-check of the same branch-pinned URL disagreed for over an hour after a real, already-landed commit. A SHA-pinned URL (`.../<commit-sha>/<path>`) is immutable and doesn't have this problem by construction. This removes the failure mode rather than catching it after the fact.
@@ -93,10 +94,12 @@ A branch-pinned URL can lag the actual commit for a period after a push. A SHA-p
 ```
 Source: <entity>
 Target: <entity>
-Timestamp: <YYYY-MM-DD HH:MM, timezone>
+Timestamp: <YYYY-MM-DD HH:MM EDT>
 
 <VERB> <object>
 ```
+
+**Timestamp convention: EDT, not UTC** (changed 2026-07-30, per Ron's direction — see changelog). Every entity's batch headers should use EDT going forward. Commands timestamped in UTC from before this change are historical, not errors.
 
 Multi-target batches are always split into separate headers, one per target. Format: structured markdown, not JSON — nothing parses these programmatically yet.
 
