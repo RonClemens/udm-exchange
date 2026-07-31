@@ -37,6 +37,11 @@ None currently blocking. `UDM_ROLES_AND_HANDOFF.md` v1.1.0 landed 2026-07-27, cl
 ## Structure
 
 ```
+UDM_TODO.md                # Lightweight, low-ceremony running list of loose ends that don't
+                             yet belong in any document's own Open Questions section. No
+                             changelog discipline required to add/update an entry — only to
+                             commit changes to the file itself.
+
 architecture-guidance/     # App-level architecture guidance — provider abstraction,
                              vendoring, directory conventions. Canonical source.
 
