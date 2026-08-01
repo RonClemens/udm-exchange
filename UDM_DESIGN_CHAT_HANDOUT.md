@@ -50,7 +50,7 @@ Conventions layered on top (all in `UDM_WORKFLOW_PROTOCOL.md`, current version v
 | Document | Version | Raw URL |
 |---|---|---|
 | Architecture Guidance | v1.6.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md |
-| PKM Entity Model | v0.7.0 (exploratory) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md |
+| PKM Entity Model | v0.7.1 (exploratory) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md |
 | SE Workbench Migration Plan | v0.7.0 (draft) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md |
 | UDM Workflow Protocol | v1.10.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_WORKFLOW_PROTOCOL.md |
 | UDM Roles & Handoff | v1.2.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_ROLES_AND_HANDOFF.md |
