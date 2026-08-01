@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 1.9.1
+**Version:** 2.0.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md))
+**Reports against:** PKM Migration Plan v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 **Changelog:**
+- v2.0.0 (2026-08-01) — added §12, documenting Migration Plan v0.7.0 Step 15: `Comment` implemented as a first-class entity with both surfaces of its Architecture Guidance §13 UI pattern (inline detail-view affordance and a global list view), backend and UI together per this step's own deliberate sequencing. Renumbered former §12 (optional follow-ups) to §13. Updated `Reports against:` to Migration Plan v0.7.0 / Entity Model v0.7.0, and added Architecture Guidance v1.6.0 to this header (first step whose guidance lives partly outside the Migration Plan/Entity Model pair).
 - v1.9.1 (2026-07-30) — two small fixes, both flagged by design chat's v1.9.0 review: (1) a fresh check run directly against this repo's `mock-data/seed.json` (not the live demo) at the current HEAD (`0909c24`) re-confirms Step 11's finding — `baselineId`/`projectId` are 0/25 null across all four entity types (CI, Specification, SafetyDeliverable, ProgramPlanningDeliverable) — same result as the v1.9.0 check, now against a named, reproducible commit rather than "current data" generically. (2) corrected a citation typo in §11 and §12 item 7: "PKM Entity Model v0.6.0 §79–82" should have read "§2–§3" (RiskItem's actual entity-table row and design-rationale sections) — a copy-paste artifact from this app's own drafting, not anything design chat introduced.
 - v1.9.0 (2026-07-30) — added §11, documenting Migration Plan v0.6.0 Steps 12 and 14 item 2 (implemented) and a factual correction on Steps 11, 13, and 14 items 1/3 (already resolved in this app's real data before the ACTION was sent — the export design chat cross-checked appears to predate this app's own recent redeploy). Also documents SEMP-generation proposal Phase D's approved slice (`RiskItem` wired into SEP Outline 3.2.1). Renumbered former §11 (optional follow-ups) to §12, added one new item. Updated `Reports against:` to Migration Plan v0.6.0.
 - v1.7.0 (2026-07-29) — added §9, documenting this app's own Step 11: implemented `Role` as a first-class entity per Migration Plan Step 9 / PKM v0.5.0 §2–§3, resolving Migration Plan §10 item 3. Renumbered former §9 (optional follow-ups) to §10 and retired item 2 there (superseded by this step). Updated `Reports against:` to Migration Plan v0.4.0 / Entity Model v0.5.0.
@@ -15,7 +16,7 @@
 - v1.1.0 (2026-07-27) — added §3, documenting a PDKM Promises UI redesign (grouped/collapsible/searchable). No entity/schema change.
 - v1.0.0 (2026-07-26) — initial report: all 7 migration steps implemented, verified, deployed.
 
-**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7), Step 9 (its consolidation into Milestone), Step 10 (a first-slice `Specification.sections` decomposition — §8), Step 11 (`Role` as a first-class entity — §9), Step 12 (`RiskItem` as a first-class entity — §10), and Steps 13-14 (§11: `ReconciliationEvent` entity, targeted backfills, and SEMP Phase D's `RiskItem`→3.2.1 wiring — this app's own numbering runs one step ahead of the canonical plan's 12/14, see §11's own note), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
+**Status:** All 7 original migration steps, this app's own Step 8 (AcquisitionMilestone, since retired — §7), Step 9 (its consolidation into Milestone), Step 10 (a first-slice `Specification.sections` decomposition — §8), Step 11 (`Role` as a first-class entity — §9), Step 12 (`RiskItem` as a first-class entity — §10), Steps 13-14 (§11: `ReconciliationEvent` entity, targeted backfills, and SEMP Phase D's `RiskItem`→3.2.1 wiring), and Step 15 (`Comment` entity plus its Architecture Guidance §13 UI pattern — §12), are implemented, verified, and deployed. This is a status/handoff report, not a request for new feedback on the plan itself — flagged items at the end are optional follow-ups, not blockers.
 
 ---
 
@@ -334,11 +335,68 @@ which now surfaces `RiskItem.description` under "Gaps & Recommendations").
 - **Step 13 (`Milestone.milestoneType`):** already backfilled in this app's current data (0/22 missing) as part of this app's own Step 8/9 work, completed earlier in this same exchange. **However, the commit that was live on the deployed static demo before 2026-07-30 does match the ACTION's finding exactly** (16/16 missing, same record count) — strong evidence the "real backend export" was taken against that older deployed version, not this repo's current state.
 - **Step 14 items 1 & 3 (`gap-003.escalatedToRiskItemId`, `assignedRoleId` on all three original recommendations):** both already populated in current data (`gap-003.escalatedToRiskItemId: "risk-001"`; `rec-001`/`002`/`003.assignedRoleId` all set) as part of this app's own Step 11/12 work. The previously-deployed commit lacks `Role`/`RiskItem` entirely, consistent with the same stale-export theory.
 
-**Likely root cause, not confirmed:** this app's GitHub Pages static demo (browser-cached localStorage) was last redeployed 2026-07-28, and wasn't redeployed again until 2026-07-30 (a separate housekeeping fix, unrelated to this ACTION). A browser session that visited the demo in that window would have loaded the pre-Step-8-through-12 app build — explaining Steps 13 and 14 items 1/3's findings exactly, record-count and all. Item 1 (Step 11) doesn't fit this theory as cleanly (`baselineId`/`projectId` predate this whole exchange and are populated in every commit checked), so it may have a different explanation not yet identified. Flagging this now rather than silently redoing already-complete work, and recommending a fresh export against the now-current deployed demo (or directly against this repo's `mock-data/seed.json`) as the more reliable source for any future cross-check — see §12 item 8 below.
+**Likely root cause, not confirmed:** this app's GitHub Pages static demo (browser-cached localStorage) was last redeployed 2026-07-28, and wasn't redeployed again until 2026-07-30 (a separate housekeeping fix, unrelated to this ACTION). A browser session that visited the demo in that window would have loaded the pre-Step-8-through-12 app build — explaining Steps 13 and 14 items 1/3's findings exactly, record-count and all. Item 1 (Step 11) doesn't fit this theory as cleanly (`baselineId`/`projectId` predate this whole exchange and are populated in every commit checked), so it may have a different explanation not yet identified. Flagging this now rather than silently redoing already-complete work, and recommending a fresh export against the now-current deployed demo (or directly against this repo's `mock-data/seed.json`) as the more reliable source for any future cross-check — see §13 item 8 below.
 
 ---
 
-## 12. Optional follow-ups (not blockers)
+## 12. Update since v1.9.1 (2026-08-01): `Comment` implemented with its Architecture Guidance §13 UI pattern (this app's Step 15)
+
+Per Migration Plan v0.7.0 Step 15 (canonical guidance *to* this app): implements `Comment` per PKM
+Entity Model v0.7.0 §2–§3 and its Architecture Guidance v1.6.0 §13 UI pattern, backend and UI
+together in one pass, per this step's own deliberate sequencing (`Comment` applies across every
+UDM app, so the UI guidance was drafted before this implementation, not retrofitted after).
+
+- **New `Comment` entity:** `id`, `projectId`, optional `entityType`/`entityId`, `text`, `status`
+  (`Open` | `Resolved`), `createdByRoleId` (references `Role`), `createdDate`, `resolvedDate`
+  (nullable). One deliberate departure from a literal reading of "reuse `Gap`'s polymorphic
+  pattern, don't reinvent it": `Gap.foundInEntityType` is a closed union of the 7 entity types
+  `Gap` can be found in, but `Comment`'s own entity-model text says it "may attach to any current
+  or future PKM entity" — a closed union would need editing every time a new entity type is
+  added, defeating that forward-compatibility. `entityType`/`entityId` are both plain
+  `string | null` instead — the two-field polymorphic *mechanism* is reused exactly, the type
+  constraint on one of its two fields is not. Flagging this interpretive call explicitly in case
+  it should instead be a documented PKM convention (any future polymorphic-attachment field
+  meant to be forward-compatible uses `string`, not a closed union) rather than an app-local
+  choice — see §13 item 9 below.
+- **New CRUD route** (`/api/comments`), same pattern as every other entity.
+- **Architecture Guidance §13.1's two surfaces, both built:**
+  - **Inline affordance** (`EntityComments.tsx`): a comment-count badge on an entity detail
+    view, expanding to a thread with create/edit-own-text/resolve/reopen, `entityType`/`entityId`
+    populated from the surrounding page's own record, not user entry. Wired into all three of
+    this app's true per-record detail views — CI, LogicalSubsystem, Specification (this app's
+    list/table pages don't have individual per-row detail screens the way these three do, so
+    there was no fourth or fifth surface to add it to).
+  - **Global list view** (`CommentsPage.tsx`): full CRUD via this app's standard
+    DataTable/EntityForm/Modal pattern, filterable by `status` and `entityType`, sortable by
+    `createdDate` — the only place an unattached `Comment` is visible, per §13.1's own framing.
+- **Resolution over deletion (§13.3):** the inline surface's primary action is "Mark Resolved"
+  (setting `resolvedDate`), not delete; the global view's delete button carries an explicit
+  in-app nudge toward resolving instead. Hard delete still available, not the default reach.
+- **No `@domain-placeholder` tagging** (§13.4): `Comment.text` is real content by construction,
+  documented in the domain-placeholder manifest with its own rationale (distinct from both
+  `ContentEntry`'s "not program data at all" and `ReconciliationEvent`'s "no free-text field"
+  reasons — this is the first entity with a genuinely free-text field that still isn't tagged).
+- **Deliberately not surfaced on the PDKM Promises tab:** that tab's whole purpose is browsing
+  `@domain-placeholder`-tagged synthetic defaults awaiting real content — `Comment` records are
+  never synthetic placeholders by definition, so including them there would misrepresent what
+  the tab means, not just add noise.
+- **Seed data:** three illustrative records covering the shape's real range — one attached to a
+  CI (the inline-surface case), one unattached (the global-list-only case), one demonstrating the
+  resolved lifecycle.
+
+**Schema footprint:** one additive entity (`Comment`, 3 seeded records), zero existing fields
+touched. Zero regression surface on any pre-existing entity or UI.
+
+**Verification:** clean `tsc -b` build in both workspaces; live-server API check confirming seeded
+records round-trip correctly (including the unattached, both-null-fields case); a Playwright pass
+confirming a full create→resolve round-trip through the real inline UI (not just direct API
+calls) on the CI detail view, the comment-count badge rendering correctly on all three detail
+pages, the global list correctly showing both attached and unattached rows with working
+status/entityType filters, and zero regressions in unrelated tabs.
+
+---
+
+## 13. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
@@ -350,6 +408,7 @@ These surfaced during implementation and are offered as candidate topics for con
 6. **Acquisition-phase/pathway modeling (§4) — answered in §5 above, resolved.** `AcquisitionPhase` and `AcquisitionPathway` both stay app-side methodology/derived content, not PKM entities (already-conformant-as-a-union and derived-not-stored respectively). The actual gap this question surfaced — AAF Milestone A/B/C had no occurrence data at all — is closed by the new `AcquisitionMilestone` entity (§5). Not offered as a candidate PKM-entity addition: this app's own Milestone entity is already the precedent (a per-baseline gate-occurrence shape), so if a second app independently needs the same AAF-milestone-occurrence concept, extending PKM's own `Milestone` entity description ("SETR gate... etc.") to explicitly cover acquisition-decision gates generically — rather than adding a whole second parallel entity to the canonical model — may be the better fit; flagged here for design chat's judgment, not decided by this app.
 7. **Two `RiskItem` interpretive calls (§10 above) not literally specified in PKM v0.6.0 §2–§3** — offered for upstream confirmation, not blocking: (a) `RiskItemStatus`'s four values (`Identified`/`Approved`/`Mitigating`/`Closed`) were derived from the entity's own four lifecycle date fields, not quoted from the canonical spec; (b) treating an `Issue`'s null `likelihood` as 1 for `riskLevel` derivation purposes is this app's own reading of "an issue has already occurred," not a literal quote. If a second app implements `RiskItem` independently, worth checking both land the same way.
 8. **New, from §11 above:** cross-checks against "a real backend export" should specify whether the export came from this app's live GitHub Pages static demo (browser-cached, can go stale between deploys and between a visitor's own sessions) or a fresh instance seeded directly from this repo's current `mock-data/seed.json` (always current). This app's static-deploy mode has a real, previously-undocumented limitation worth naming: its `normalize()`/`backfillNewCollectionsFromSeed()` logic (`client/src/api/localStore.ts`) only backfills entirely-missing top-level collections for a cached browser session, never new fields added to an already-existing collection's existing rows — so a browser that cached the demo before a schema change will silently miss that change indefinitely, with no automatic recovery. Not asking for a redesign; flagging so a future cross-check knows which source it's really reading.
+9. **New, from §12 above:** `Comment.entityType`/`entityId` were implemented as plain `string | null` rather than reusing `GapEntityType`'s closed-union pattern, since `Comment`'s own entity-model text calls for forward-compatibility with future entity types a closed union can't provide without editing. Worth deciding whether this should become a documented PKM convention (any polymorphic-attachment field meant to stay open-ended uses `string`, while one meant to be exhaustive/validated — like `Gap`'s — stays a closed union) rather than a one-off interpretive call this app made locally.
 
 ---
 
