@@ -1,10 +1,11 @@
 # SE Workbench — PKM Migration Plan
 
-**Version:** 0.6.2 (Draft — for Workbench repo feedback)
+**Version:** 0.7.0 (Draft — for Workbench repo feedback)
 **Target repo:** the SE Workbench app (formerly "PDR Reconciliation & Baseline Alignment Workbench")
-**Based on:** PKM Entity & Relationship Model v0.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.5.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
+**Based on:** PKM Entity & Relationship Model v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 
 **Changelog:**
+- **v0.7.0** — Added Step 15: implement `Comment` (PKM v0.7.0 §2–§3) with its Architecture Guidance §13 UI pattern, backend and UI together — Ron's explicit sequencing call (2026-07-31), given `Comment` applies across the whole UDM, not one app, so the UI pattern should exist before any one app's implementation sets a de facto precedent other apps then have to match retroactively. Renumbered Open Questions §15→§16.
 - **v0.6.2** — Step 11 closed as **not reproducible against this app's real data**, verified against status report v1.9.1: a fresh export taken directly against `mock-data/seed.json` at a named commit (`0909c24...`) still shows 0/25 null on `baselineId`/`projectId` across all four entity types — same clean result as every other check run. Unlike Steps 13/14 items 1&3, the stale-static-demo theory doesn't explain this one (these fields predate the entire exchange and are populated in every commit checked). The discrepancy is real but its source is upstream of this repo — likely an artifact of how the original export was generated or sourced, not a Workbench defect. No further app-side action expected; flagged for Ron's awareness if the export process itself needs review. Also fixed a citation typo Workbench caught in their own report ("§79–82" → "§2–§3," their own copy-paste error, not design chat's).
 - **v0.6.1** — Steps 12 and 14 item 2 confirmed complete, verified against status report v1.9.0 §11. Steps 13 and 14 items 1/3 confirmed **already resolved before the ACTION was sent** — the "real export" design chat cross-checked was taken against Workbench's GitHub Pages static demo, last redeployed 2026-07-28, two days stale relative to the work actually completed. Root cause identified precisely (§12 item 8 of the same report): the static/localStorage deploy mode's backfill logic only backfills entirely-missing collections for a cached browser session, never new fields on an already-existing collection's rows — so a browser that cached the demo before a schema change misses it silently, indefinitely, with no auto-recovery. **Step 11 remains genuinely unresolved** — Workbench checked every commit available and found `baselineId`/`projectId` populated in all of them, so the stale-cache explanation doesn't account for design chat's original finding there. Recommending a fresh export directly against `mock-data/seed.json` (not the live demo) to settle this definitively, per Workbench's own §12 item 8 recommendation.
 - **v0.6.0** — Added Steps 11–14, all sourced from a real backend export cross-checked against the generated SEMP migration package (design chat, 2026-07-30), not from prose review alone. Step 11: backfill `baselineId`/`projectId` on CI/Specification/SafetyDeliverable/ProgramPlanningDeliverable records — the legacy `baseline` string field is still doing the real work everywhere. Step 12: migrate real, populated `Baseline.reconciledFromBaselineId`/`reconciledIntoBaselineId` data into an actual `ReconciliationEvent` record — this predates `ReconciliationEvent`'s existence and was never previously assigned as a migration step; that's a planning gap on design chat's side, not an implementation defect, called out as such in Step 12 below. Step 13: verify/backfill `Milestone.milestoneType` — every milestone record in the export is missing it, and the generated schedule table's Type column renders blank as a direct, visible symptom. Step 14: backfill `Gap.escalatedToRiskItemId`, `ActionItem.resolvesRiskItemId`, and `ActionItem.assignedRoleId` on the three legacy records whose narrative text already claims these relationships but whose structural fields don't reflect them. Fixed stale `Based on:` Architecture Guidance version (was v1.4.0, now v1.5.0).
@@ -63,7 +64,7 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- `satisfiedByCiIds` modeled many-to-many. Real seed data (`delta-001`) confirmed this is a genuine case, not a hypothetical — **resolves open question §15 item 1 below.**
+- `satisfiedByCiIds` modeled many-to-many. Real seed data (`delta-001`) confirmed this is a genuine case, not a hypothetical — **resolves open question §16 item 1 below.**
 - `parentRequirementId` demonstrated via a second requirement implicitly part of the first.
 
 ---
@@ -82,7 +83,7 @@
 
 *(Historical record — implemented and verified per status report v1.0.0 §1.)*
 
-- Real unification demonstrated: a finding previously tracked by two separate mechanisms (a CI's over-decomposition flag and a Delta Matrix row) now references one `Gap` record — **resolves open question §15 item 2 below.**
+- Real unification demonstrated: a finding previously tracked by two separate mechanisms (a CI's over-decomposition flag and a Delta Matrix row) now references one `Gap` record — **resolves open question §16 item 2 below.**
 - `Recommendation` deliberately left untouched here, picked up in Step 7.
 - Workbench's own follow-up (status report §6 item 3): current implementation uses a single `foundInEntityType`/`foundInEntityId` per Gap, but real data shows a finding can be found in one place while referenced by multiple other mechanisms — flagged as a candidate future PKM cardinality question, not resolved by this plan.
 
@@ -94,7 +95,7 @@
 
 - `Recommendation.owner` converted from free text to a five-role taxonomy: Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager.
 - `resolvesGapId` added, coexisting with the existing `relatedCiId`.
-- **Partially resolves open question §15 item 3 below** — resolved locally; Workbench's own status report frames this as "a pragmatic starting cut, not a definitive one" and asks whether it's a reasonable cross-app default. That question is not answered by this plan.
+- **Partially resolves open question §16 item 3 below** — resolved locally; Workbench's own status report frames this as "a pragmatic starting cut, not a definitive one" and asks whether it's a reasonable cross-app default. That question is not answered by this plan.
 
 ---
 
@@ -120,7 +121,7 @@
 
 **Approved to proceed now**, decoupled from the broader SEMP-generation proposal decision (Ron, 2026-07-29) — this doesn't wait on that proposal's other open items.
 
-This is guidance *to* Workbench again, same direction as Step 8, but this time scoped directly from Workbench's own estimate (Migration Plan §15 item 3 response) rather than design chat guessing at implementation cost:
+This is guidance *to* Workbench again, same direction as Step 8, but this time scoped directly from Workbench's own estimate (Migration Plan §16 item 3 response) rather than design chat guessing at implementation cost:
 
 - **New `Role` entity:** `id`, `projectId`, `name`, `authorityDescription` (optional), `isDefault` (boolean). Seed with the existing five-role set (Lead Systems Engineer, CM Lead, Software Lead, Safety Lead, Program Manager) as `isDefault: true` records — this preserves the taxonomy Workbench already validated, just makes it data instead of a hardcoded union.
 - **New CRUD route** for `Role` (create/list/update/delete), mirroring the pattern already used for every other entity.
@@ -130,7 +131,7 @@ This is guidance *to* Workbench again, same direction as Step 8, but this time s
 
 **Risk:** low-moderate, mechanical in shape (new entity + CRUD + coexisting reference field, the same recipe as Steps 1–3) but touches more surface area than those did (a new admin UI, not just data modeling) — closer in scope to Step 7's original role-taxonomy work than to Step 1's pure additive record creation.
 
-**Not part of this step:** any `RiskItem`-side use of `Role` (proposed in the SEMP-generation proposal, `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §3.1) — that's a separate, still-gated decision. This step is scoped to closing Migration Plan §15 item 3 alone.
+**Not part of this step:** any `RiskItem`-side use of `Role` (proposed in the SEMP-generation proposal, `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §3.1) — that's a separate, still-gated decision. This step is scoped to closing Migration Plan §16 item 3 alone.
 
 ---
 
@@ -204,7 +205,21 @@ Three specific records where the narrative text already claims a relationship th
 
 ---
 
-## 15. Open questions for Workbench's team before implementation starts
+## 15. Step 15 — Implement `Comment` with its Architecture Guidance §13 UI pattern (new, approved to proceed)
+
+**Approved to proceed now** (Ron, 2026-07-31), backend and UI together, not phased like `RiskItem` was — the sequencing call here is deliberate: `Comment` is meant to apply across every app in the UDM, not just Workbench, so the UI pattern (Architecture Guidance §13) was drafted *before* this step rather than after, precisely so this implementation can follow it rather than the guidance retroactively trying to match whatever Workbench happened to build first.
+
+- **New `Comment` entity:** `id`, `projectId`, optional `entityType`/`entityId` (same polymorphic pattern as `Gap.foundInEntityType`/`foundInEntityId` — reuse the existing convention, don't reinvent it), `text`, `status` (`Open` \| `Resolved`), `createdByRoleId` (references `Role`, manually selected at creation — no auth system to derive it from, same UX as `ActionItem.assignedRoleId`), `createdDate`, `resolvedDate` (nullable).
+- **New CRUD route**, same pattern as every other entity.
+- **UI, per Architecture Guidance §13.1** — two surfaces: (1) an inline comment-count affordance on existing entity detail views, expanding to a create/edit/resolve thread, with `entityType`/`entityId` populated from context automatically; (2) a global list view, filterable by `status` and `entityType`, which is the only place an unattached `Comment` is visible.
+- **Resolution over deletion (§13.3):** default UI action is "mark Resolved," not delete. Hard delete not prohibited, just not the primary affordance.
+- **No `@domain-placeholder` tagging needed (§13.4)** — `Comment.text` is always real content by construction, nothing to mark as a synthetic default.
+
+**Risk:** moderate. New entity + CRUD (low risk, same recipe as every step) plus a genuinely new UI surface (the inline affordance touches every existing entity detail view, at least in a minimal way) — the UI integration breadth is the main risk factor, not the entity or backend logic itself.
+
+---
+
+## 16. Open questions for Workbench's team before implementation starts
 
 1. ~~Does a `Requirement` in this app's real data ever get satisfied by more than one CI, or is that always one-to-one?~~ **Resolved.** Yes — confirmed many-to-many by real seed data (`delta-001`), per status report §1 Step 4. No further input needed.
 2. ~~For Gap unification (Step 6): are there UI features, filters, or reports built specifically against `DeltaMatrixRow`, `overDecompositionFlag`, or `Recommendation` as distinct types that would need parallel updates, or can they be safely generalized?~~ **Resolved.** Successfully unified in practice — one existing finding tracked by two prior mechanisms now references a single `Gap` record, per status report §1 Step 6. A related but distinct question (`foundIn` cardinality — one location per finding vs. multiple) remains open per status report §6 item 3, not this question.

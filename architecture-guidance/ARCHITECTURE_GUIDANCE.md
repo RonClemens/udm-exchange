@@ -1,10 +1,11 @@
 # Reusable SE Webapp Architecture Guidance
 
-**Version:** 1.5.0
-**Last updated:** 2026-07-29
+**Version:** 1.6.0
+**Last updated:** 2026-07-31
 **Status:** Draft
 
 **Changelog:**
+- **v1.6.0** — Added §13, the Comment / TODO UI Pattern — a user-editable UI convention for PKM's new `Comment` entity (PKM v0.7.0), needed because every prior entity's UI precedent (§10.5's "Promises" view) is explicitly read-only. Renumbered former §13 ("Why This Matters Long-Term") to §14.
 - **v1.5.0** — Added §11 (brief — `RiskItem` fields follow the existing `@domain-placeholder` convention, §10, no new mechanism) and §12, the SEMP Generation Pattern: a directory convention and generation approach for assembling a Systems Engineering Management Plan from PKM structure + PDKM content, per `proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` §2 (design chat, 2026-07-29). No new provider capability required — reuses the existing provider abstraction (§3) and data-injection pattern (§4) exactly as designed; these sections document the pattern, they don't introduce new mechanism. Renumbered former §11 ("Why This Matters Long-Term") to §13.
 - **v1.4.0** — Added §10, the `@domain-placeholder` convention: a field/type-level marker for program-specific illustrative content, plus a required manifest and a recommended "Promises" UI pattern. Generalized from SE Workbench's own implementation, refined through Workbench's response to the original proposal (JSDoc-comment form, whole-type and shared-subtype tagging patterns, mock-data scope settled as out-of-scope). Renumbered former §10 ("Why This Matters Long-Term") to §11. Added a §7 migration-checklist line for retroactive tagging.
 - **v1.3.0** — Added §10 (now §11), forward-compatibility conventions for an eventual Unified Data Model (UDM) spanning multiple apps. Non-blocking; sets conventions only.
@@ -368,6 +369,33 @@ If a real implementation surfaces a need for any of the above, that's a gap to r
 
 ---
 
-## 13. Why This Matters Long-Term
+## 13. The Comment / TODO UI Pattern
+
+`Comment` (PKM v0.7.0) is different from every entity this document has addressed a UI pattern for so far. §10.5's "Promises" view — the closest existing precedent — is explicitly **read-only**: a display of synthetic values waiting to be replaced by real PDKM content. `Comment` is the opposite: it's meant for direct, real, end-user-authored input, persisted live, with no synthetic/placeholder framing at all. This section exists because that gap is real, not because `Comment` needed new provider or data-injection mechanism — it doesn't; it's CRUD like every other entity (§2, §4).
+
+### 13.1 Recommended shape, not mandated
+
+Two complementary surfaces, matching how `Comment`'s polymorphic attachment actually gets used:
+
+- **Inline, on any entity detail view the app already has:** a small comment-count affordance (e.g., a badge or icon) that expands to a thread — create, edit own text, mark `Resolved`/reopen. This is where most comments will actually get created, attached to whatever record the user was already looking at (`entityType`/`entityId` populated from context, not user-entered).
+- **A global list view**, filterable by `status` and by `entityType`, sortable by `createdDate` — the only place an *unattached* `Comment` (no `entityType`/`entityId`) is visible at all, and a useful cross-cutting view even for attached ones. This plays a similar role to §10.5's Promises view structurally (one screen, everything in one place), but is fully editable rather than read-only.
+
+Every app doesn't need identical UI for either surface — the requirement is that both exist in *some* form, the same "every app needs some visible way to answer X" standard §10.5 already sets for its own question.
+
+### 13.2 Authorship without assuming authentication
+
+Most apps built against this architecture are internal SE tools without individual user login (per this document's own scope — synthetic demo apps, shared-access tools). `Comment.createdByRoleId` should therefore be a **manually selected value at creation time** — the same UX already established for `ActionItem.assignedRoleId` (a Role-select dropdown, not an auto-derived session identity). If an app later adds real authentication, deriving `createdByRoleId` from a logged-in user's role becomes a natural enhancement, not a breaking change to the entity shape.
+
+### 13.3 Resolution, not deletion, as the default
+
+Prefer setting `status: "Resolved"` (with `resolvedDate` populated) over hard-deleting a `Comment` record — this preserves it as historical context, consistent with how this document treats every other entity's lifecycle (nothing else in the PKM model is designed around silent deletion). Hard delete isn't prohibited, just not the default pattern to reach for.
+
+### 13.4 Content-boundary note
+
+`Comment.text` is always PDKM content — real, user-authored, by definition never synthetic. Nothing about `Comment` needs `@domain-placeholder` tagging (§10): there's no "default value" to tag, since every real `Comment` record only exists because a user actually created it. Mock/seed data, if an app includes example `Comment` records for demo purposes, follows the same §10.6 exemption every other entity's seed data already has.
+
+---
+
+## 14. Why This Matters Long-Term
 
 Right now each app (PDR readiness, Dispatch, translator) independently reinvents: an AI provider call, a prompt, a data shape, a UI. Once `/methodology` + `/provider` are standardized, a new tool for a new program becomes: define a data schema, write a few checklist/prompt files, reuse everything else. That's the actual scaling unlock — not just CUI-compliance, but turning one-off tools into a genuine internal SE toolkit product line.
