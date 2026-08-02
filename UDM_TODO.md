@@ -1,10 +1,11 @@
 # UDM — TODO / Comments
 
-**Version:** 0.2.0
-**Last updated:** 2026-07-30
+**Version:** 0.3.0
+**Last updated:** 2026-07-31
 **Status:** Active
 
 **Changelog:**
+- **v0.3.0** — T-011 moved: formalized as `Comment`, PKM Entity Model v0.7.0 §2–§3. Per Ron's direction (2026-07-31) that this applies to the entire UDM data structure, not one entity or one app — implemented as a polymorphic entity reusing `Gap`'s existing `foundInEntityType`/`foundInEntityId` pattern, attachable to any current or future PKM entity, or left unattached. One real gap surfaced in formalizing it, carried into PKM §5 item 7: it needs a genuinely user-editable Architecture Guidance UI pattern, which §10.5's read-only "Promises" view doesn't cover.
 - **v0.2.0** — Added T-011: Ron's direction that this concept should become a standard in-app feature (user-visible, user-editable TODO/comments per program), not just a design-chat-maintained coordination file. Includes an unvetted sketch of a possible `Comment`/`TodoItem` PKM entity — explicitly not ready to relay as guidance, same plan-before-propose discipline used for `Role` and `RiskItem`.
 - **v0.1.0** — Initial version, ten items pre-populated from things flagged across 2026-07-29/30 threads that lacked one clear home.
 
@@ -42,19 +43,14 @@ Add an entry with a short table row. Status values: `Open`, `Parked` (deliberate
 | T-008 | Whether a generated SEMP needs any PKM-level audit trail (record of when/from-what-data-snapshot it was generated) | Design chat, SEMP proposal drafting | SEMP Generation Proposal §6 item 5 | Open | 2026-07-29 |
 | T-009 | Program-level parallel Projects — should a Program be able to run parallel Projects targeting the same eventual system, not just parallel Baselines inside one Project? | PKM Entity Model, original draft | PKM Entity Model §5 item 4 | Open | (predates this session) |
 | T-010 | ChecklistItem `domain` tagging — plain string attribute today; worth first-class `Domain` entity status if real usage across apps clarifies a need | PKM Entity Model, original draft | PKM Entity Model §5 item 2 | Open | (predates this session) |
-| T-011 | This document's concept should eventually become a standard **in-app feature**, not just a design-chat-maintained file — each webapp should display TODO/comment items and let the end **user** view and add their own, per their program's real data | Ron, 2026-07-30 | PKM Entity Model (new entity, not yet proposed); Architecture Guidance §10.5 (Promises view is the closest existing precedent — read-only; this would need to be user-editable, which is new) | Open — not yet scoped as a real proposal | 2026-07-30 |
+| T-011 | ~~This document's concept should eventually become a standard **in-app feature**...~~ | Ron, 2026-07-30/31 | **Moved to PKM Entity Model v0.7.0** (`Comment` entity, §2–§3) | Moved | 2026-07-30 |
+| T-012 | `Comment` needs a genuinely user-editable Architecture Guidance UI pattern — §10.5's "Promises" view is the closest precedent but is explicitly read-only; real user input/persistence in a live deployment isn't covered by any existing pattern | Design chat, formalizing T-011 | PKM Entity Model §5 item 7; Architecture Guidance §10.5 (new subsection needed) | Open | 2026-07-31 |
 
 ---
 
-## T-011 — sketch, not a proposal yet
+## T-011 — moved, see PKM Entity Model v0.7.0
 
-A rough shape, offered so this doesn't sit as a bare one-line idea — **not vetted, not grounded, not ready to relay as guidance**, same "sketch before proposal" discipline used for `Role` and `RiskItem` before either was formalized:
-
-- Likely a new PKM entity (working name `Comment` or `TodoItem`): `id`, `projectId`, polymorphic `entityType`/`entityId` (optional — a comment can attach to any existing record, *or* stand alone unattached, the way a repo-level TODO does), `text` (real PDKM content — user-authored, not structural), `status` (`Open`/`Resolved`), `createdByRoleId` (reusing `Role`, same as `RiskItem.ownerRoleId`), `createdDate`, `resolvedDate`.
-- Architecture Guidance precedent: closest existing pattern is §10.5's "Promises" view — but that's explicitly read-only, framed as a promissory note about synthetic data. This would need to be genuinely user-editable in a live deployment, which §10.5 doesn't cover and would need new guidance for (real user input, real persistence, not a demo/placeholder concept).
-- Real open questions before this is proposal-ready: does a comment attach to a specific entity by default, or start unattached? Does `Comment`/`TodoItem` relate to `Gap`/`RiskItem` at all, or is it deliberately lighter-weight and unstructured by design (the whole point being *not* to require the rigor those two entities have)? Should this replace or complement `ActionItem` for informal, non-remediation notes?
-
-**Not being relayed to either coding chat yet.** This needs the same plan-then-propose treatment as the SEMP-generation work before any entity design or Architecture Guidance addition goes out.
+Formalized as `Comment` — polymorphic attachment (reusing `Gap`'s existing pattern), lightweight by design (no severity/category/derived score, unlike `Gap`/`RiskItem`), the first entity in this model created by direct end-user input rather than a defined SE process step. Full rationale in PKM Entity Model §3. Not yet relayed to either coding chat for implementation.
 
 ---
 
