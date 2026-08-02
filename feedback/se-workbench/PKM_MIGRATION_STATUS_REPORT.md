@@ -1,9 +1,10 @@
 # SE Workbench — PKM Migration Status Report
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 **From:** SE Workbench implementation session ("PDR Reconciliation & Baseline Alignment Workbench")
-**Reports against:** PKM Migration Plan v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.6.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
+**Reports against:** PKM Migration Plan v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md)), PKM Entity & Relationship Model v0.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md)), Architecture Guidance v1.7.0 ([raw](https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md))
 **Changelog:**
+- v2.1.0 (2026-08-01) — added §13, documenting an Architecture Guidance §8.1 compliance fix flagged directly by design chat: this app's footer was displaying stale, literally-copy-pasted example version values (v1.4.0, two version bumps of undetected drift). Re-vendored to v1.7.0, replaced hardcoded TS constants with the new `/data-schema/PKM_VERSIONS.json` single source of truth, and added the same object as a `meta` block to both data-export features. Renumbered former §13 (optional follow-ups) to §14, added one new item. Updated `Reports against:` Architecture Guidance to v1.7.0 (was citing v1.6.0, one revision behind).
 - v2.0.0 (2026-08-01) — added §12, documenting Migration Plan v0.7.0 Step 15: `Comment` implemented as a first-class entity with both surfaces of its Architecture Guidance §13 UI pattern (inline detail-view affordance and a global list view), backend and UI together per this step's own deliberate sequencing. Renumbered former §12 (optional follow-ups) to §13. Updated `Reports against:` to Migration Plan v0.7.0 / Entity Model v0.7.0, and added Architecture Guidance v1.6.0 to this header (first step whose guidance lives partly outside the Migration Plan/Entity Model pair).
 - v1.9.1 (2026-07-30) — two small fixes, both flagged by design chat's v1.9.0 review: (1) a fresh check run directly against this repo's `mock-data/seed.json` (not the live demo) at the current HEAD (`0909c24`) re-confirms Step 11's finding — `baselineId`/`projectId` are 0/25 null across all four entity types (CI, Specification, SafetyDeliverable, ProgramPlanningDeliverable) — same result as the v1.9.0 check, now against a named, reproducible commit rather than "current data" generically. (2) corrected a citation typo in §11 and §12 item 7: "PKM Entity Model v0.6.0 §79–82" should have read "§2–§3" (RiskItem's actual entity-table row and design-rationale sections) — a copy-paste artifact from this app's own drafting, not anything design chat introduced.
 - v1.9.0 (2026-07-30) — added §11, documenting Migration Plan v0.6.0 Steps 12 and 14 item 2 (implemented) and a factual correction on Steps 11, 13, and 14 items 1/3 (already resolved in this app's real data before the ACTION was sent — the export design chat cross-checked appears to predate this app's own recent redeploy). Also documents SEMP-generation proposal Phase D's approved slice (`RiskItem` wired into SEP Outline 3.2.1). Renumbered former §11 (optional follow-ups) to §12, added one new item. Updated `Reports against:` to Migration Plan v0.6.0.
@@ -396,7 +397,56 @@ status/entityType filters, and zero regressions in unrelated tabs.
 
 ---
 
-## 13. Optional follow-ups (not blockers)
+## 13. Update since v2.0.0 (2026-08-01): Architecture Guidance §8.1 compliance fix — re-vendored to v1.7.0
+
+Flagged directly by design chat, not a Migration Plan step (Architecture Guidance / vendoring
+discipline, not a PKM entity change): this app's in-app footer was displaying `v1.4.0
+(2026-07-27)` — literally the example values from §8.1's *prior* code snippet, never actually
+updated since the very first vendoring bump, two real version bumps (v1.5.0, v1.6.0) of
+undetected drift. Per design chat's own framing, this was the old §8.1 snippet's own failure mode
+(hardcoded example values shipped directly in copy-paste code), not a defect in how this app used
+it — stated here for the record, not as a self-criticism.
+
+- **Re-vendored** `/vendor/architecture-guidance-v1.7.0.md`, removing the stale v1.4.0 copy.
+- **New `/data-schema/PKM_VERSIONS.json`** — the single source of truth for
+  `architectureGuidanceVersion`/`Date` and `pkmEntityModelVersion`/`Date`, replacing the old
+  hand-maintained `ARCHITECTURE_VERSION`/`ARCHITECTURE_DATE` TS constants (`client/src/config/architectureVersion.ts`,
+  now deleted).
+- **One adaptation from §8.1's literal text, flagged rather than silently substituted:** §8.1 says
+  "read by the footer at runtime (fetch, not embedded constants)" — a genuine network `fetch()`
+  call. This app's footer instead reads `PKM_VERSIONS.json` via a build-time JSON import
+  (`import pkmVersions from "../../../data-schema/PKM_VERSIONS.json"`), the same pattern this
+  app already uses for other shared repo-root content (e.g. `sempExport.ts`'s methodology
+  imports). Reasoning: this app has two deploy modes (server-backed and a static GitHub Pages
+  build with no server), and `/data-schema` sits outside `client/public` — making a true runtime
+  fetch require either duplicating the file into `client/public` (a second copy to keep in sync,
+  the exact problem §8.1 exists to eliminate) or a build step to copy it there. A build-time
+  import reads the same single canonical file with zero duplication and updates automatically on
+  next build, which satisfies §8.1's actual stated goal ("single source of truth... never two
+  places to keep in sync") without the added deploy-mode complexity a literal fetch would need
+  here. Flagging as a candidate note for §8.1 itself (a bundled/static SPA may reasonably read
+  this file via build-time import rather than runtime fetch) rather than silently deviating — see
+  §14 item 10 below.
+- **`meta` block added to both of this app's data-export features** (§8.1's own requirement):
+  "Export JSON" (`ExportImport.tsx`) and the SEMP Migration package (`sempExport.ts`) both now
+  carry the same `PKM_VERSIONS.json` object. Stripped back out on import (`api.importData`) so
+  re-importing a previously-exported file doesn't persist a stray `meta` key into either deploy
+  mode's store.
+- **Every in-repo doc/comment citing the vendored version or path** (seven files) updated to
+  v1.7.0.
+
+**Schema footprint:** none — this is a vendoring/tooling fix, not a PKM entity change.
+
+**Verification:** clean `tsc -b` build in both workspaces (including a new `resolveJsonModule`
+compiler option and `/data-schema` include-path addition, needed for the JSON import); a
+Playwright pass confirming the footer now shows `v1.7.0 (2026-08-01)` and links to the re-vendored
+file, the "Export JSON" download includes the correct `meta` block, re-importing that same file
+succeeds without error and doesn't persist `meta` into the server's `db.json`, and the SEMP
+Migration package's generated Markdown carries the same version line near its top.
+
+---
+
+## 14. Optional follow-ups (not blockers)
 
 These surfaced during implementation and are offered as candidate topics for continued discussion, not requests:
 
@@ -409,6 +459,7 @@ These surfaced during implementation and are offered as candidate topics for con
 7. **Two `RiskItem` interpretive calls (§10 above) not literally specified in PKM v0.6.0 §2–§3** — offered for upstream confirmation, not blocking: (a) `RiskItemStatus`'s four values (`Identified`/`Approved`/`Mitigating`/`Closed`) were derived from the entity's own four lifecycle date fields, not quoted from the canonical spec; (b) treating an `Issue`'s null `likelihood` as 1 for `riskLevel` derivation purposes is this app's own reading of "an issue has already occurred," not a literal quote. If a second app implements `RiskItem` independently, worth checking both land the same way.
 8. **New, from §11 above:** cross-checks against "a real backend export" should specify whether the export came from this app's live GitHub Pages static demo (browser-cached, can go stale between deploys and between a visitor's own sessions) or a fresh instance seeded directly from this repo's current `mock-data/seed.json` (always current). This app's static-deploy mode has a real, previously-undocumented limitation worth naming: its `normalize()`/`backfillNewCollectionsFromSeed()` logic (`client/src/api/localStore.ts`) only backfills entirely-missing top-level collections for a cached browser session, never new fields added to an already-existing collection's existing rows — so a browser that cached the demo before a schema change will silently miss that change indefinitely, with no automatic recovery. Not asking for a redesign; flagging so a future cross-check knows which source it's really reading.
 9. **New, from §12 above:** `Comment.entityType`/`entityId` were implemented as plain `string | null` rather than reusing `GapEntityType`'s closed-union pattern, since `Comment`'s own entity-model text calls for forward-compatibility with future entity types a closed union can't provide without editing. Worth deciding whether this should become a documented PKM convention (any polymorphic-attachment field meant to stay open-ended uses `string`, while one meant to be exhaustive/validated — like `Gap`'s — stays a closed union) rather than a one-off interpretive call this app made locally.
+10. **New, from §13 above:** §8.1 as written specifies a runtime `fetch()` for the footer; this app instead uses a build-time JSON import of the same single file, since a genuine runtime fetch would require either duplicating `PKM_VERSIONS.json` into a client-served static-assets directory (a second copy to keep in sync — the exact problem §8.1 exists to eliminate) or an extra build step to copy it there, given this app's dual server-backed/static-GitHub-Pages deploy modes. Worth deciding whether §8.1 should explicitly bless "build-time import of the single file" as an equally-conformant option for bundled SPAs, alongside literal runtime fetch, rather than leaving it implied.
 
 ---
 
