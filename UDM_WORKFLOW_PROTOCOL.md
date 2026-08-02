@@ -1,11 +1,12 @@
 # UDM Effort — Workflow Protocol: States, Commands, and Handoff Triggers
 
-**Version:** 1.10.0
-**Last updated:** 2026-07-30
+**Version:** 1.11.0
+**Last updated:** 2026-08-02
 **Status:** Active
 **Companion to:** `UDM_ROLES_AND_HANDOFF.md` v1.2.0 (defines *who* the four entities are; this document defines *how* they trigger each other)
 
 **Changelog:**
+- **v1.11.0** — Added §3.6, **Context-Capacity Self-Check**, per Ron's direction (2026-08-02): every entity in this exchange periodically self-assesses its own context-window risk using a standard, repeatable, explicitly-qualitative rubric — not only when asked, though a request always triggers one. Mandatory as a section of any session-handoff document; also self-triggered heuristically after an unusually large single ingestion or roughly 15-20 message exchanges without one.
 - **v1.10.0** — Changed §3.2's `Timestamp:` convention from UTC to EDT, per Ron's direction (2026-07-30). All markdown command batch headers should carry an EDT timestamp going forward, not UTC — this document is what defines the format every entity follows, so the convention itself needed a real revision, not just a habit change on any one entity's side. Existing commands already timestamped in UTC during the transition period aren't errors; they predate this version.
 - **v1.9.0** — Added §3.5, **Documentation Drift Reconciliation**: a named convention for handling the case where two-or-more canonical documents describe incompatible mechanics for the same thing, generalized from how this exact situation was actually handled on 2026-07-29 (a design-chat provenance check found `UDM_ROLES_AND_HANDOFF.md` v1.1.0 contradicting both `README.md` and `UDM_EXCHANGE_ACCESS_PROTOCOL.md` on whether Workbench has direct write access to `udm-exchange`). Corrected §5, which asserted "Ron remains the only relay point between the other three entities" — stale in the same way and by the same root cause as the Roles & Handoff line it was restating; see `UDM_ROLES_AND_HANDOFF.md` v1.2.0 for the corrected version. Updated the companion-document reference above to v1.2.0.
 - **v1.8.0** — Made SHA-pinned verification symmetric: §3.1 now requires any entity re-verifying a `CONFIRM` — not just the entity that pushed it — to use a SHA-pinned URL before treating a mismatch as confirmed failure. Added directly after a branch-pinned URL returned stale content on design chat's side across many checks in this thread, while the SHA-pinned URL for the same commit was correct on first fetch. Also added §3.4, the cross-reference convention: structural header citations (`Companion to:`, `Supersedes:`, etc.) should carry a branch-pinned raw URL alongside the name/version, distinct from §3.1's SHA-pinned verification links — a citation should always resolve to current truth, not freeze a moment in time. Correction to a prior draft note: the `@domain-placeholder` convention is Architecture Guidance content (already merged there as §10, v1.4.0) — it was mistakenly listed as pending for this document; it isn't, and has no further action here.
@@ -122,6 +123,23 @@ Canonical and near-canonical documents describe the same mechanics from differen
 3. **Once decided, the owning session applies the correction** — usually the `udm-exchange` session, since it holds most of this repo's own process docs — with a changelog entry that names what was found and by whom (which entity's check surfaced it), not just what changed. This keeps the drift itself part of the record, the same way a stale cross-reference or a superseded feedback doc is kept visible rather than silently fixed.
 
 This is a discovery-and-repair pattern, not a new command verb — `STATUS` already covers step 1; nothing here changes the seven-verb vocabulary in §3.
+
+### 3.6 Context-Capacity Self-Check
+
+Any entity in this exchange (design chat, `udm-exchange`, any app coding session) should perform a brief context-capacity self-assessment:
+
+- Whenever explicitly requested.
+- As a mandatory section of any session-handoff document — a handoff without this section is incomplete.
+- As a rough self-triggered check after any unusually large single ingestion (a big file/export/status report) or after roughly 15-20 message exchanges without one — a heuristic, not a hard rule, since none of these entities have real token-count access and every estimate here is necessarily qualitative, stated as such every time, not a precise measurement.
+
+**Standard format, four parts:**
+
+1. **Estimated utilization** — a percentage range, explicitly labeled as an estimate.
+2. **Signs of possible degradation** — concrete, checked honestly (e.g., "no factual errors traced to lost context" is a real data point; "still re-verifying via source documents rather than pure recall" is a caveat on that, not full reassurance).
+3. **Risk rating** — Low / Medium / High.
+4. **Recommendation** — continue, or produce a session-handoff document now.
+
+If risk comes back Medium-High, say so plainly and suggest a handoff — don't wait for a forced failure to raise it.
 
 ---
 

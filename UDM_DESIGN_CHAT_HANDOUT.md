@@ -37,7 +37,7 @@ Seven commands, always issued by Ron:
 | `STATUS` | `STATUS` / `STATUS <doc>` | Report current state (query, no transition) |
 | `NEXT` | `NEXT` | The single action that unblocks the current holdup |
 
-Conventions layered on top (all in `UDM_WORKFLOW_PROTOCOL.md`, current version v1.8.0):
+Conventions layered on top (all in `UDM_WORKFLOW_PROTOCOL.md`, current version v1.11.0):
 
 - **§3.1 — SHA-pinned self-verification.** Any entity that pushes a commit must fetch the *SHA-pinned* raw URL (`.../<commit-sha>/<path>`, not `.../main/<path>`) to confirm content before reporting done — branch-pinned URLs can lag a push. This requirement is **symmetric**: if you're independently re-checking a `CONFIRM`, use the SHA-pinned URL too, and treat a branch-pinned mismatch alone as inconclusive, not a confirmed failure. (This exact caching lag has bitten this effort twice — once on `raw.githubusercontent.com`, once again on a local git-fetch cache during this handout's own verification. Don't assume "still stale" without checking a second way.)
 - **§3.2 — `Source:`/`Target:`/`Timestamp:` headers.** Precede a relayed command batch with who sent it, who it's for, and when — optional, strengthens when present.
@@ -52,7 +52,7 @@ Conventions layered on top (all in `UDM_WORKFLOW_PROTOCOL.md`, current version v
 | Architecture Guidance | v1.7.1 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/architecture-guidance/ARCHITECTURE_GUIDANCE.md |
 | PKM Entity Model | v0.7.3 (exploratory) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/pkm/PKM_ENTITY_MODEL.md |
 | SE Workbench Migration Plan | v0.7.0 (draft) | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/migration-plans/se-workbench/PKM_MIGRATION_PLAN.md |
-| UDM Workflow Protocol | v1.10.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_WORKFLOW_PROTOCOL.md |
+| UDM Workflow Protocol | v1.11.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_WORKFLOW_PROTOCOL.md |
 | UDM Roles & Handoff | v1.2.0 | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/UDM_ROLES_AND_HANDOFF.md |
 | This repo's README (structure, conventions) | — | https://raw.githubusercontent.com/RonClemens/udm-exchange/main/README.md |
 
