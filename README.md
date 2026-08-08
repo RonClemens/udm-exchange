@@ -10,8 +10,8 @@ Shared, public-safe methodology documents for the Unified Data Model (UDM) effor
 
 | Document | Version | Location |
 |---|---|---|
-| Architecture Guidance | v1.7.1 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
-| PKM Entity Model | v0.7.3 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
+| Architecture Guidance | v1.8.0 | `architecture-guidance/ARCHITECTURE_GUIDANCE.md` |
+| PKM Entity Model | v0.8.0 (exploratory) | `pkm/PKM_ENTITY_MODEL.md` |
 | SE Workbench Migration Plan | v0.7.0 (draft) | `migration-plans/se-workbench/PKM_MIGRATION_PLAN.md` |
 | UDM Workflow Protocol | v1.11.0 | `UDM_WORKFLOW_PROTOCOL.md` |
 | UDM Roles & Handoff | v1.2.0 | `UDM_ROLES_AND_HANDOFF.md` |
@@ -27,8 +27,8 @@ Draft changes to a canonical document, awaiting review before they merge in. Not
 | Source/Target/Batch Structure for Commands | `UDM_WORKFLOW_PROTOCOL.md` §3.2/§3.3 | **Merged** into Workflow Protocol v1.6.0 — `RESOLVED` |
 | Raw URL Required on Cross-Document References | `UDM_WORKFLOW_PROTOCOL.md` §3.4 | **Merged** into Workflow Protocol v1.8.0 — `RESOLVED` (no explicit `CLOSE` issued; marked resolved since §3.4's content fulfills it — flagged in case that's not yet intended) |
 | UDM v2.0 — Automated SEMP Generation Architecture (`proposals/UDM_V2_SEMP_GENERATION_PROPOSAL.md` v0.6.2) | Architecture Guidance §11–§12 shipped; PKM `Role`/`RiskItem` (structure, data, SEMP-wiring) all shipped and verified; all 4 data-integrity findings now resolved/closed (Step 11 closed as not reproducible against Workbench's real data, source upstream of that repo) | **Draft** — only genuinely open item across all of 2026-07-30's work: whether DI-SESS-81785B/SEP Outline v4.1 supersedes 24748-4 (§6 item 1, with Ron). §6 item 8 (static-deploy caching limitation) still a candidate Architecture Guidance addition, not yet drafted. |
-| PKM / Architecture Guidance Candidate Updates from S4 SEMP Interview §2.1 (`proposals/PKM_ARCH_GUIDANCE_CANDIDATE_UPDATES_S4.md`) | PKM Entity Model (`Lifecycle`/`ReviewState` construct, `Role`-bound review chain, expanded `Requirement` attributes, `DerivationTrace`, `requirement_domain`); Architecture Guidance (tool-agnostic traceability interchange schema) | **Draft** — 6 candidates, none yet reviewed/decided; explicitly not a version bump per the document's own status line |
-| PKM / Architecture Guidance Candidate Updates from S4 SEMP Interview §2.2 (`proposals/PKM_ARCH_GUIDANCE_CANDIDATE_UPDATES_S4_2.2.md`) | PKM Entity Model (new `Interface` entity, `artifactRole` classifier, new `TDP` entity, `tool_category` `entity_scope` amendment) — all extend the §2.1 `Lifecycle`/`ReviewState` construct above | **Draft** — 3 new candidates (7–9) + 1 amendment, none yet reviewed/decided; blocked on the same open Gap/ActionItem/ChecklistItem status-conflict audit as §2.1 |
+| PKM / Architecture Guidance Candidate Updates from S4 SEMP Interview §2.1 (`proposals/PKM_ARCH_GUIDANCE_CANDIDATE_UPDATES_S4.md`) | PKM Entity Model; Architecture Guidance | **Mostly merged** into PKM v0.8.0 §2/§3/§5 (`LifecycleState`, `DerivationStep`, expanded `Requirement` attributes, `requirement_domain`) and Architecture Guidance v1.8.0 §14 (tool-agnostic traceability interchange schema) — `RESOLVED` for candidates 1, 2, 3, 5; Candidate 2's role-chain folded directly into `LifecycleState.roleId`, no separate construct needed |
+| PKM / Architecture Guidance Candidate Updates from S4 SEMP Interview §2.2 (`proposals/PKM_ARCH_GUIDANCE_CANDIDATE_UPDATES_S4_2.2.md`) | PKM Entity Model; Architecture Guidance | **Mostly merged** into PKM v0.8.0 §2/§3 (`Interface` entity, joining `LifecycleState`'s applicable-entity list) and Architecture Guidance v1.8.0 §14 (`tool_category` `entity_scope` amendment) — `RESOLVED` for Candidate 7 and the `tool_category` amendment; **`artifactRole` (Candidate 8) and `TDP` (Candidate 9) remain open**, carried forward to PKM v0.8.0 §5 open questions #8–#9, explicitly not resolved on inference |
 
 ## Open item
 
